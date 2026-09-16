@@ -32,7 +32,7 @@ const findUserByEmail = (email, callback) => {
 const findUserById = (id, callback) => {
 
     const sql = `
-        SELECT id, name, email, phone, address
+        SELECT id, name, email, phone, address, status, role, created_at
         FROM users
         WHERE id = ?
     `;
@@ -65,9 +65,39 @@ const updateUserProfile = (userData, callback) => {
 
 };
 
+const getUserNotifications = (userId, callback) => {
+    const sql = `
+        SELECT id, user_id, message, status, created_at
+        FROM notifications
+        WHERE user_id = ? OR user_id IS NULL
+        ORDER BY created_at DESC
+    `;
+    db.query(sql, [userId], callback);
+};
+
+const markNotificationAsRead = (notifId, callback) => {
+    const sql = `
+        UPDATE notifications
+        SET status = 'Read'
+        WHERE id = ?
+    `;
+    db.query(sql, [notifId], callback);
+};
+
+const saveFeedback = (userId, message, callback) => {
+    const sql = `
+        INSERT INTO feedback (user_id, message)
+        VALUES (?, ?)
+    `;
+    db.query(sql, [userId, message], callback);
+};
+
 module.exports = {
     createUser,
-    findUserByEmail ,
+    findUserByEmail,
     findUserById,
-    updateUserProfile
+    updateUserProfile,
+    getUserNotifications,
+    markNotificationAsRead,
+    saveFeedback
 };

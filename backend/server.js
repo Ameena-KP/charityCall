@@ -3,11 +3,14 @@ const cors = require("cors");
 require("dotenv").config();
 require("./config/db");
 
+const path = require("path");
+
 const app = express();
 
 // ================= Middleware =================
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ================= Routes =================
 const userRoutes = require("./routes/userRoutes");
@@ -21,7 +24,6 @@ app.use("/api/charity", charityRequestRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/donations", donationRoutes);
-app.use("/api/admin", adminRoutes);
 
 // ================= Home Route =================
 app.get("/", (req, res) => {

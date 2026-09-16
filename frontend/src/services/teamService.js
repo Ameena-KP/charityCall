@@ -1,51 +1,46 @@
-import axios from "axios";
+import api from "./api";
 
-const API = "http://localhost:5000/api/team";
+export const registerTeam = async (teamData) => {
+  const response = await api.post("/team/register", teamData);
+  return response.data;
+};
 
-const getToken = () => {
-    return localStorage.getItem("token");
+export const loginTeam = async (credentials) => {
+  const response = await api.post("/team/login", credentials);
+  return response.data;
 };
 
 export const getPendingRequests = async () => {
-
-    const response = await axios.get(
-        `${API}/pending`,
-        {
-            headers: {
-                Authorization: `Bearer ${getToken()}`
-            }
-        }
-    );
-
-    return response.data;
+  const response = await api.get("/team/pending");
+  return response.data;
 };
 
-export const approveRequest = async (id) => {
+export const getApprovedRequests = async () => {
+  const response = await api.get("/team/approved");
+  return response.data;
+};
 
-    const response = await axios.put(
-        `${API}/approve/${id}`,
-        {},
-        {
-            headers: {
-                Authorization: `Bearer ${getToken()}`
-            }
-        }
-    );
-
-    return response.data;
+export const approveRequest = async (id, category) => {
+  const response = await api.put(`/team/approve/${id}`, { category });
+  return response.data;
 };
 
 export const rejectRequest = async (id) => {
+  const response = await api.put(`/team/reject/${id}`);
+  return response.data;
+};
 
-    const response = await axios.put(
-        `${API}/reject/${id}`,
-        {},
-        {
-            headers: {
-                Authorization: `Bearer ${getToken()}`
-            }
-        }
-    );
+export const updateCategory = async (id, category) => {
+  const response = await api.put(`/team/category/${id}`, { category });
+  return response.data;
+};
 
-    return response.data;
+export const getTeamDonations = async () => {
+  const response = await api.get("/team/donations");
+  return response.data;
+};
+
+export const completeTeamDonation = async (id) => {
+  const response = await api.put(`/team/donations/${id}`);
+  return response.data;
 };

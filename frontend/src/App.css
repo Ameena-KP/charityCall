@@ -1,0 +1,804 @@
+/* ==========================================================
+   CHARITY CONNECT - PROFESSIONAL SAAS DESIGN SYSTEM
+   ========================================================== */
+
+/* Layout Reset & Framework */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f8fafc !important;
+  color: #1e293b;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* Base Flex Layout */
+.app-container {
+  display: flex !important;
+  flex-direction: row !important;
+  min-height: 100vh !important;
+  width: 100% !important;
+  background-color: #f8fafc !important;
+  position: relative;
+}
+
+/* ==========================================================
+   LEFT-SIDE NAVBAR / SIDEBAR (SLEEK SLATE DESIGN)
+   ========================================================== */
+.app-sidebar {
+  width: 270px !important;
+  min-width: 270px !important;
+  max-width: 270px !important;
+  background-color: #0f172a !important; /* Rich Dark Slate */
+  color: #f8fafc !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: sticky !important;
+  top: 0 !important;
+  height: 100vh !important;
+  z-index: 1040 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12) !important;
+  transition: transform 0.3s ease-in-out !important;
+}
+
+/* Sidebar Brand */
+.sidebar-header {
+  padding: 1.5rem 1.25rem 1.25rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.sidebar-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  text-decoration: none !important;
+  color: #ffffff !important;
+}
+
+.brand-icon-box {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, #0284c7 0%, #0d9488 100%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.5rem !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4) !important;
+  flex-shrink: 0 !important;
+}
+
+.brand-title {
+  font-size: 1.2rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+  color: #ffffff !important;
+}
+
+.brand-subtitle {
+  font-size: 0.7rem !important;
+  color: #38bdf8 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+  display: block !important;
+  margin-top: 2px !important;
+}
+
+/* Sidebar Current User Card */
+.sidebar-user-card {
+  padding: 0.85rem 1rem !important;
+  margin: 1rem 1rem 0.5rem !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.sidebar-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #0284c7 0%, #6366f1 100%) !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+}
+
+.sidebar-user-name {
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: #f8fafc !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 145px !important;
+}
+
+.sidebar-role-badge {
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  padding: 2px 8px !important;
+  border-radius: 20px !important;
+  display: inline-block !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-top: 2px !important;
+}
+
+.role-badge-user {
+  background-color: rgba(2, 132, 199, 0.2) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(2, 132, 199, 0.3) !important;
+}
+
+.role-badge-team {
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+
+.role-badge-admin {
+  background-color: rgba(244, 63, 94, 0.2) !important;
+  color: #fb7185 !important;
+  border: 1px solid rgba(244, 63, 94, 0.3) !important;
+}
+
+/* Sidebar Navigation Items */
+.sidebar-nav-container {
+  flex: 1 1 0% !important;
+  padding: 0.75rem 0.85rem !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.sidebar-section-label {
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  color: #64748b !important;
+  padding: 0.65rem 0.75rem 0.3rem !important;
+  letter-spacing: 0.08em !important;
+}
+
+.sidebar-nav-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0.72rem 0.9rem !important;
+  margin-bottom: 4px !important;
+  border-radius: 10px !important;
+  color: #94a3b8 !important;
+  text-decoration: none !important;
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+  transition: all 0.18s ease-in-out !important;
+}
+
+.sidebar-nav-item:hover {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  transform: translateX(2px) !important;
+}
+
+.sidebar-nav-item.active {
+  background: linear-gradient(90deg, rgba(2, 132, 199, 0.25) 0%, rgba(2, 132, 199, 0.05) 100%) !important;
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+  border-left: 3.5px solid #38bdf8 !important;
+}
+
+.nav-link-content {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.nav-link-icon {
+  font-size: 1.15rem !important;
+  width: 22px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.sidebar-footer {
+  padding: 1rem 1.15rem !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background-color: #0b1120 !important;
+}
+
+.sidebar-logout-btn {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.25) !important;
+  padding: 0.65rem 1rem !important;
+  border-radius: 8px !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.sidebar-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.25) !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+}
+
+/* ==========================================================
+   MAIN CONTENT PANE & TOPBAR
+   ========================================================== */
+.app-main {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background-color: #f8fafc !important;
+  min-height: 100vh !important;
+}
+
+.app-topbar {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  padding: 0.9rem 2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1020 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.topbar-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.topbar-toggle {
+  background: none !important;
+  border: none !important;
+  font-size: 1.4rem !important;
+  color: #64748b !important;
+  cursor: pointer !important;
+  display: none !important;
+}
+
+.topbar-title {
+  margin: 0 !important;
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  letter-spacing: -0.02em !important;
+}
+
+.topbar-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.app-content {
+  padding: 2rem !important;
+  flex: 1 1 0% !important;
+}
+
+/* ==========================================================
+   CONTENT CARDS & STAT CARDS
+   ========================================================== */
+.content-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+  overflow: hidden !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.content-card-header {
+  padding: 1.15rem 1.4rem !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  background-color: #ffffff !important;
+}
+
+.content-card-title {
+  margin: 0 !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+}
+
+.content-card-body {
+  padding: 1.4rem !important;
+}
+
+/* ==========================================================
+   REQUEST CARD DESCRIPTION & ALIGNMENT
+   ========================================================== */
+.request-card-title {
+  font-size: 1.08rem !important;
+  font-weight: 700 !important;
+  color: #0284c7 !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  margin-bottom: 0.6rem !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  min-height: 2.7rem !important;
+}
+
+.request-card-desc {
+  font-size: 0.88rem !important;
+  line-height: 1.55 !important;
+  color: #64748b !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  word-wrap: break-word !important;
+  min-height: 72px !important;
+  max-height: 72px !important;
+  overflow-y: auto !important;
+  padding-right: 4px !important;
+  margin-bottom: 0.85rem !important;
+}
+
+.request-card-desc::-webkit-scrollbar {
+  width: 4px !important;
+}
+
+.request-card-desc::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+  border-radius: 4px !important;
+}
+
+.request-card-desc::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important;
+}
+
+.needed-items-box {
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  padding: 0.6rem 0.75rem !important;
+  margin-bottom: 0.85rem !important;
+  min-height: 60px !important;
+}
+
+.needed-items-badge {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  font-size: 0.78rem !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  display: inline-block !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+  max-width: 100% !important;
+}
+
+/* Stat Tile Cards */
+.stat-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  padding: 1.35rem 1.25rem !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.08) !important;
+}
+
+.stat-icon {
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.5rem !important;
+  flex-shrink: 0 !important;
+}
+
+.stat-icon.primary {
+  background-color: #e0f2fe !important;
+  color: #0284c7 !important;
+}
+
+.stat-icon.success {
+  background-color: #d1fae5 !important;
+  color: #059669 !important;
+}
+
+.stat-icon.warning {
+  background-color: #fef3c7 !important;
+  color: #d97706 !important;
+}
+
+.stat-icon.danger {
+  background-color: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+.stat-value {
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+  color: #0f172a !important;
+  margin-bottom: 2px !important;
+}
+
+.stat-label {
+  font-size: 0.8rem !important;
+  color: #64748b !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* ==========================================================
+   CUSTOM CLEAN TABLE DESIGN
+   ========================================================== */
+.custom-table {
+  width: 100% !important;
+  margin-bottom: 0 !important;
+  border-collapse: collapse !important;
+}
+
+.custom-table th {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  padding: 0.9rem 1.1rem !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-top: none !important;
+  white-space: nowrap !important;
+}
+
+.custom-table td {
+  padding: 1rem 1.1rem !important;
+  vertical-align: middle !important;
+  font-size: 0.88rem !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: #334155 !important;
+}
+
+.custom-table tr:hover td {
+  background-color: #f8fafc !important;
+}
+
+/* ==========================================================
+   STATUS BADGES & TAGS
+   ========================================================== */
+.status-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 0.3rem 0.75rem !important;
+  border-radius: 9999px !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+}
+
+.status-badge.approved, .status-badge.active, .status-badge.completed {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+
+.status-badge.pending, .status-badge.unread {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+}
+
+.status-badge.rejected, .status-badge.blocked {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+}
+
+.category-tag {
+  display: inline-block !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  background-color: #e0f2fe !important;
+  color: #0369a1 !important;
+}
+
+/* ==========================================================
+   CUSTOM BUTTONS
+   ========================================================== */
+.btn-primary-custom {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  padding: 0.55rem 1.25rem !important;
+  font-size: 0.88rem !important;
+  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25) !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.btn-primary-custom:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #075985 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.35) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-outline-custom {
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #334155 !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.88rem !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+}
+
+.btn-outline-custom:hover {
+  background-color: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}
+
+/* ==========================================================
+   ROLE TABS (LOGIN / REGISTER / MY REQUESTS)
+   ========================================================== */
+.role-tabs {
+  display: flex !important;
+  background: #e2e8f0 !important;
+  border-radius: 10px !important;
+  padding: 4px !important;
+}
+
+.role-tab-btn {
+  flex: 1 1 0% !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 0.55rem 0.5rem !important;
+  border-radius: 8px !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  text-align: center !important;
+}
+
+.role-tab-btn.active {
+  background: #ffffff !important;
+  color: #0284c7 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ==========================================================
+   FORM CONTROLS ENHANCEMENT
+   ========================================================== */
+.form-control, .form-select {
+  border-radius: 8px !important;
+  border: 1px solid #cbd5e1 !important;
+  padding: 0.6rem 0.85rem !important;
+  font-size: 0.9rem !important;
+  color: #1e293b !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+}
+
+/* ==========================================================
+   PUBLIC HERO SECTION
+   ========================================================== */
+.hero-wrapper {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  color: #ffffff !important;
+  padding: 5rem 1.5rem 4.5rem !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.hero-tagline {
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  color: #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.14) !important;
+  display: inline-block !important;
+  padding: 6px 18px !important;
+  border-radius: 30px !important;
+  margin-bottom: 1.25rem !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+}
+
+.hero-title {
+  font-size: 3.2rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.15 !important;
+  margin-bottom: 1.25rem !important;
+}
+
+.hero-title span {
+  background: linear-gradient(135deg, #38bdf8 0%, #34d399 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.hero-subtitle {
+  font-size: 1.15rem !important;
+  color: #cbd5e1 !important;
+  max-width: 680px !important;
+  margin: 0 auto 2.25rem !important;
+  line-height: 1.6 !important;
+}
+
+.impact-counter-card {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 14px !important;
+  padding: 1.5rem 1rem !important;
+  text-align: center !important;
+  color: #ffffff !important;
+}
+
+.impact-number {
+  font-size: 2.2rem !important;
+  font-weight: 800 !important;
+  color: #38bdf8 !important;
+}
+
+.impact-text {
+  font-size: 0.85rem !important;
+  color: #cbd5e1 !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+}
+
+.step-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  padding: 2.25rem 1.75rem !important;
+  text-align: center !important;
+  height: 100% !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.step-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+.step-num {
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 50% !important;
+  background: #e0f2fe !important;
+  color: #0284c7 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  margin: 0 auto 1.25rem !important;
+}
+
+/* ==========================================================
+   AUTH BOX (LOGIN & REGISTER)
+   ========================================================== */
+.auth-page-wrapper {
+  min-height: calc(100vh - 65px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+  padding: 2.5rem 1rem !important;
+}
+
+.auth-box {
+  width: 100% !important;
+  max-width: 480px !important;
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid #e2e8f0 !important;
+  overflow: hidden !important;
+}
+
+.auth-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  color: #ffffff !important;
+  padding: 2.25rem 2rem 1.75rem !important;
+  text-align: center !important;
+}
+
+.auth-body {
+  padding: 2.25rem 2rem !important;
+}
+
+/* ==========================================================
+   RESPONSIVE MOBILE BREAKPOINTS
+   ========================================================== */
+@media (max-width: 992px) {
+  .app-sidebar {
+    position: fixed !important;
+    left: -280px !important;
+    top: 0 !important;
+    bottom: 0 !important;
+  }
+
+  .app-sidebar.show-mobile {
+    left: 0 !important;
+  }
+
+  .topbar-toggle {
+    display: block !important;
+  }
+
+  .sidebar-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(15, 23, 42, 0.65) !important;
+    backdrop-filter: blur(4px) !important;
+    z-index: 1030 !important;
+  }
+
+  .app-content {
+    padding: 1.25rem !important;
+  }
+
+  .hero-title {
+    font-size: 2.4rem !important;
+  }
+}
