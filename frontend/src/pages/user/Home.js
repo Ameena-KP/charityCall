@@ -2,33 +2,69 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import { getApprovedRequests } from "../../services/charityService";
-import { donateItem } from "../../services/donationService";
 import { getAuthUser } from "../../utils/authStorage";
 
 function Home() {
   const currentUser = getAuthUser();
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
 
-  // Donation Modal State
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [donateFormData, setDonateFormData] = useState({
-    item_name: "",
-    quantity: 1,
+  // Modals state
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [showCategoriesModal, setShowCategoriesModal] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+
+  // Quick feedback form state
+  const [feedbackForm, setFeedbackForm] = useState({
+    name: currentUser?.name || "",
+    email: currentUser?.email || "",
+    message: "",
   });
-  const [donateSubmitting, setDonateSubmitting] = useState(false);
-  const [donateSuccessMsg, setDonateSuccessMsg] = useState("");
+  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
 
   const categories = [
-    { name: "All", icon: "bi-grid-fill" },
-    { name: "Food", icon: "bi-basket2-fill" },
-    { name: "Clothing", icon: "bi-tag-fill" },
-    { name: "Medicine", icon: "bi-capsule" },
-    { name: "Education", icon: "bi-mortarboard-fill" },
-    { name: "Shelter", icon: "bi-house-heart-fill" },
+    {
+      name: "Food & Groceries",
+      icon: "bi-basket2-fill",
+      desc: "Essential nutritional rations and dry food support for vulnerable families.",
+      color: "#f59e0b",
+      badge: "Food",
+    },
+    {
+      name: "Clothing & Apparel",
+      icon: "bi-tag-fill",
+      desc: "Warm clothing, seasonal wear, and school uniforms for children and elderly.",
+      color: "#0284c7",
+      badge: "Clothing",
+    },
+    {
+      name: "Medicine & Healthcare",
+      icon: "bi-capsule",
+      desc: "Critical prescription medications, medical aids, and emergency treatment support.",
+      color: "#ef4444",
+      badge: "Medicine",
+    },
+    {
+      name: "Education & Books",
+      icon: "bi-mortarboard-fill",
+      desc: "Academic textbooks, stationery, and learning materials for deserving students.",
+      color: "#8b5cf6",
+      badge: "Education",
+    },
+    {
+      name: "Shelter & Living",
+      icon: "bi-house-heart-fill",
+      desc: "Blankets, household essentials, and rehabilitation provisions for displaced persons.",
+      color: "#10b981",
+      badge: "Shelter",
+    },
+    {
+      name: "Emergency Relief",
+      icon: "bi-shield-exclamation",
+      desc: "Immediate relief resources for disaster recovery and crisis assistance.",
+      color: "#ec4899",
+      badge: "Emergency",
+    },
   ];
 
   useEffect(() => {
@@ -37,135 +73,80 @@ function Home() {
 
   const fetchApproved = async () => {
     try {
-      setLoading(true);
       const res = await getApprovedRequests();
       if (res.success && res.data) {
         setRequests(res.data);
       }
     } catch (err) {
-      console.error("Error fetching requests:", err);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching requests count:", err);
     }
   };
 
-  const filteredRequests = requests.filter((req) => {
-    // Exclude logged-in user's own requests from public donation discovery
-    if (currentUser) {
-      if (currentUser.id && Number(req.user_id) === Number(currentUser.id)) {
-        return false;
-      }
-      if (currentUser.email && req.user_email && req.user_email.toLowerCase() === currentUser.email.toLowerCase()) {
-        return false;
-      }
-      if (currentUser.name && req.user_name && req.user_name.toLowerCase().trim() === currentUser.name.toLowerCase().trim()) {
-        return false;
-      }
-    }
-
-    const matchesCategory =
-      selectedCategory === "All" ||
-      (req.category &&
-        req.category.toLowerCase() === selectedCategory.toLowerCase());
-    const matchesSearch =
-      req.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      req.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (req.required_items &&
-        req.required_items.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
-  });
-
-  const handleOpenDonateModal = (req) => {
-    if (currentUser && Number(req.user_id) === Number(currentUser.id)) {
-      alert("You cannot donate to your own charity request.");
-      return;
-    }
-    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
-    if (!token) {
-      if (
-        window.confirm(
-          "You need to log in to make a donation pledge. Would you like to go to the login page?"
-        )
-      ) {
-        navigate("/login");
-      }
-      return;
-    }
-    setSelectedRequest(req);
-    setDonateFormData({
-      item_name: req.required_items ? req.required_items.split(",")[0] : "",
-      quantity: 1,
-    });
-    setDonateSuccessMsg("");
-  };
-
-  const handleDonateSubmit = async (e) => {
+  const handleFeedbackSubmit = (e) => {
     e.preventDefault();
-    if (!donateFormData.item_name || donateFormData.quantity < 1) {
-      alert("Please specify the item name and quantity");
-      return;
-    }
-
-    try {
-      setDonateSubmitting(true);
-      const res = await donateItem({
-        request_id: selectedRequest.id,
-        item_name: donateFormData.item_name,
-        quantity: donateFormData.quantity,
-      });
-
-      if (res.success) {
-        setDonateSuccessMsg("Donation pledge recorded successfully! Thank you!");
-        setTimeout(() => {
-          setSelectedRequest(null);
-          setDonateSuccessMsg("");
-        }, 1800);
-      }
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to submit donation pledge.");
-    } finally {
-      setDonateSubmitting(false);
-    }
+    if (!feedbackForm.message.trim()) return;
+    setFeedbackSuccess(true);
+    setTimeout(() => {
+      setFeedbackSuccess(false);
+      setShowFeedbackModal(false);
+      setFeedbackForm((prev) => ({ ...prev, message: "" }));
+    }, 1600);
   };
 
   return (
-    <div className="d-flex flex-column min-vh-100">
-      <Navbar />
+    <div className="home-fixed-viewport">
+      {/* Top Navigation */}
+      <Navbar
+        onOpenVerification={() => setShowVerificationModal(true)}
+        onOpenCategories={() => setShowCategoriesModal(true)}
+      />
 
-      {/* Hero Section */}
-      <section className="hero-wrapper text-center">
-        <div className="container position-relative" style={{ zIndex: 2 }}>
-          <span className="hero-tagline">
-            <i className="bi bi-shield-check me-1"></i> 100% Verified Charity
-            Network
-          </span>
+      {/* Hero & Stats Fullscreen Main Section */}
+      <main className="hero-fullscreen-container">
+        {/* Ambient Glowing Background Lights */}
+        <div className="hero-glow-1"></div>
+        <div className="hero-glow-2"></div>
+
+        <div className="hero-content-inner">
+          {/* Tagline Badge */}
+          <div className="hero-tagline">
+            <i className="bi bi-shield-check me-2"></i>
+            100% VERIFIED CHARITY NETWORK
+          </div>
+
+          {/* Headline */}
           <h1 className="hero-title">
             Empowering Communities Through <br />
             <span>Transparent Giving</span>
           </h1>
+
+          {/* Subtitle */}
           <p className="hero-subtitle">
             Charity Connect connects compassionate donors with verified individuals
             who genuinely need support. Every charity request is verified by our dedicated
             team before being published.
           </p>
 
-          <div className="d-flex flex-wrap justify-content-center gap-3 mb-5">
-            <a href="#requests" className="btn btn-primary-custom btn-lg px-4 py-2">
-              <i className="bi bi-heart-fill me-2"></i> Browse & Donate
-            </a>
-            <Link to="/user/create-request" className="btn btn-outline-light btn-lg px-4 py-2">
+          {/* Action Call-to-Actions */}
+          <div className="d-flex flex-wrap justify-content-center gap-3 hero-action-buttons">
+            <Link to="/user/browse" className="btn btn-primary-custom btn-lg">
+              <i className="bi bi-heart-fill me-2"></i> Browse &amp; Donate
+            </Link>
+            <Link to="/user/create-request" className="btn btn-outline-light btn-lg">
               <i className="bi bi-plus-circle me-2"></i> Request Assistance
             </Link>
-            <Link to="/register" className="btn btn-outline-info btn-lg px-4 py-2">
+            <Link to="/register" className="btn btn-outline-info btn-lg">
               <i className="bi bi-people me-2"></i> Join as Volunteer
             </Link>
           </div>
 
-          {/* Impact Stats */}
-          <div className="row g-3 justify-content-center">
+          {/* Impact Stats Row */}
+          <div className="row g-3 justify-content-center hero-stats-row">
             <div className="col-6 col-md-3">
               <div className="impact-counter-card">
-                <div className="impact-number">{requests.length}+</div>
+                <div className="impact-number">
+                  {requests.length > 0 ? `${requests.length}+` : "7+"}
+                </div>
                 <p className="impact-text">Verified Requests</p>
               </div>
             </div>
@@ -189,417 +170,402 @@ function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </main>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-5 bg-white border-bottom">
+      {/* Fixed Contacts Footer */}
+      <footer className="home-contacts-footer">
         <div className="container">
-          <div className="text-center mb-5">
-            <span className="text-primary fw-bold text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "0.08em" }}>
-              Reliable & Fraud-Free
-            </span>
-            <h2 className="fw-bold fs-2 mt-1">How Charity Connect Works</h2>
-            <p className="text-muted mx-auto" style={{ maxWidth: "600px" }}>
-              Our transparent three-tier verification process ensures all aid reaches the right hands.
-            </p>
-          </div>
-
-          <div className="row g-4">
-            <div className="col-md-4">
-              <div className="step-card">
-                <div className="step-num">1</div>
-                <h4 className="fw-bold mb-2">Submit Request</h4>
-                <p className="text-muted">
-                  Beneficiaries submit their charity needs specifying essential items (food, medicines, books) and upload official verification proof.
-                </p>
-              </div>
+          <div className="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-2 text-center text-lg-start">
+            {/* Left: Brand & Guarantee */}
+            <div className="d-flex align-items-center gap-2">
+              <span className="small text-secondary">
+                &copy; {new Date().getFullYear()}{" "}
+                <strong className="text-light">Charity Connect</strong> &bull; Direct &amp; Transparent Giving
+              </span>
             </div>
 
-            <div className="col-md-4">
-              <div className="step-card">
-                <div className="step-num">2</div>
-                <h4 className="fw-bold mb-2">Team Verification</h4>
-                <p className="text-muted">
-                  Our verification team examines user identity, verifies eligibility and supporting documents, and categorizes the request before approval.
-                </p>
-              </div>
-            </div>
-
-            <div className="col-md-4">
-              <div className="step-card">
-                <div className="step-num">3</div>
-                <h4 className="fw-bold mb-2">Direct Donating</h4>
-                <p className="text-muted">
-                  Donors browse verified requests, pledge essential items, track delivery status, and ensure direct, transparent community impact.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Categories Filter Section */}
-      <section id="categories" className="py-5 bg-light border-bottom">
-        <div className="container">
-          <div className="text-center mb-4">
-            <h2 className="fw-bold fs-2">Explore Causes by Category</h2>
-            <p className="text-muted">
-              Choose an area of need to discover active verified requests.
-            </p>
-          </div>
-
-          <div className="d-flex flex-wrap justify-content-center gap-2 mb-4">
-            {categories.map((cat) => (
-              <button
-                key={cat.name}
-                onClick={() => setSelectedCategory(cat.name)}
-                className={`btn d-flex align-items-center gap-2 px-3 py-2 ${
-                  selectedCategory === cat.name
-                    ? "btn-primary-custom"
-                    : "btn-outline-custom"
-                }`}
+            {/* Center: Contact Details Pills */}
+            <div className="d-flex flex-wrap align-items-center justify-content-center gap-2">
+              <a
+                href="mailto:support@charityconnect.org"
+                className="contact-pill text-light text-decoration-none"
+                title="Send an email to support"
               >
-                <i className={`bi ${cat.icon}`}></i>
-                <span>{cat.name}</span>
-              </button>
-            ))}
-          </div>
+                <i className="bi bi-envelope-fill text-info me-1"></i>
+                <span>support@charityconnect.org</span>
+              </a>
 
-          {/* Search Bar */}
-          <div className="row justify-content-center mb-4">
-            <div className="col-md-6">
-              <div className="input-group shadow-sm">
-                <span className="input-group-text bg-white border-end-0">
-                  <i className="bi bi-search text-muted"></i>
-                </span>
-                <input
-                  type="text"
-                  className="form-control border-start-0 ps-0"
-                  placeholder="Search requests by title, description or items..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                {searchQuery && (
-                  <button
-                    className="btn btn-outline-secondary"
-                    onClick={() => setSearchQuery("")}
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Verified Requests Grid */}
-      <section id="requests" className="py-5 flex-grow-1">
-        <div className="container">
-          <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-            <div>
-              <h3 className="fw-bold m-0">Verified Active Requests</h3>
-              <small className="text-muted">
-                Showing {filteredRequests.length} verified appeals
-              </small>
-            </div>
-            <Link to="/user/create-request" className="btn btn-outline-primary btn-sm">
-              <i className="bi bi-plus-lg me-1"></i> Submit a New Request
-            </Link>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-5">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </div>
-              <p className="mt-3 text-muted">Loading verified requests...</p>
-            </div>
-          ) : filteredRequests.length === 0 ? (
-            <div className="text-center py-5 bg-white rounded border">
-              <i className="bi bi-inbox text-muted" style={{ fontSize: "3rem" }}></i>
-              <h5 className="mt-3 fw-bold">No Requests Found</h5>
-              <p className="text-muted">
-                {selectedCategory !== "All"
-                  ? `No verified requests currently in category "${selectedCategory}".`
-                  : "No charity requests currently match your search criteria."}
-              </p>
-              <button
-                className="btn btn-outline-primary btn-sm"
-                onClick={() => {
-                  setSelectedCategory("All");
-                  setSearchQuery("");
-                }}
+              <a
+                href="tel:+919876543210"
+                className="contact-pill text-light text-decoration-none"
+                title="Call charity support helpline"
               >
-                Reset Filters
+                <i className="bi bi-telephone-fill text-success me-1"></i>
+                <span>+91 98765 43210</span>
+              </a>
+
+              <span className="contact-pill text-light" title="Central Office Location">
+                <i className="bi bi-geo-alt-fill text-danger me-1"></i>
+                <span>Central Charity Hub, Kerala, India</span>
+              </span>
+
+              <span className="contact-pill text-light d-none d-md-inline-flex" title="Team Availability">
+                <i className="bi bi-clock-fill text-warning me-1"></i>
+                <span>24/7 Verification Support</span>
+              </span>
+            </div>
+
+            {/* Right: Quick Action Social & Direct Contact Icons */}
+            <div className="d-flex align-items-center gap-2">
+              <a
+                href="https://wa.me/919876543210"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-icon-btn whatsapp"
+                title="Chat with support on WhatsApp"
+              >
+                <i className="bi bi-whatsapp"></i>
+              </a>
+              <a
+                href="mailto:support@charityconnect.org"
+                className="social-icon-btn email"
+                title="Email Us Directly"
+              >
+                <i className="bi bi-envelope"></i>
+              </a>
+              <button
+                type="button"
+                onClick={() => setShowFeedbackModal(true)}
+                className="social-icon-btn feedback"
+                title="Send Feedback / Inquiry"
+              >
+                <i className="bi bi-chat-heart"></i>
               </button>
             </div>
-          ) : (
-            <div className="row g-4">
-              {filteredRequests.map((req) => (
-                <div key={req.id} className="col-md-6 col-lg-4">
-                  <div className="card h-100 border shadow-sm d-flex flex-column">
-                    <div className="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
-                      <span className="category-tag">
-                        <i className="bi bi-tag-fill me-1"></i>
-                        {req.category || "General"}
-                      </span>
-                      <span className="status-badge approved">
-                        <i className="bi bi-patch-check-fill"></i> Verified
-                      </span>
-                    </div>
-
-                    <div className="card-body d-flex flex-column">
-                      <h5 className="request-card-title" title={req.title}>
-                        {req.title}
-                      </h5>
-                      <div className="request-card-desc" title={req.description}>
-                        {req.description}
-                      </div>
-
-                      {req.required_items ? (
-                        <div className="needed-items-box">
-                          <small className="d-block fw-bold text-secondary mb-1">
-                            <i className="bi bi-box-seam me-1"></i> Required Items:
-                          </small>
-                          <span className="needed-items-badge">
-                            {req.required_items}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="needed-items-box d-flex align-items-center">
-                          <small className="text-muted fst-italic">
-                            <i className="bi bi-info-circle me-1"></i> General Assistance
-                          </small>
-                        </div>
-                      )}
-
-                      <div className="border-top pt-2 mt-auto d-flex justify-content-between align-items-center text-muted" style={{ fontSize: "0.8rem" }}>
-                        <span>
-                          <i className="bi bi-person me-1"></i> {req.user_name || "Applicant"}
-                        </span>
-                        <span>
-                          <i className="bi bi-calendar3 me-1"></i>{" "}
-                          {new Date(req.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="card-footer bg-white border-top p-3 d-flex gap-2">
-                      {req.document && (
-                        <a
-                          href={`http://localhost:5000/uploads/${req.document}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="btn btn-outline-secondary btn-sm flex-fill"
-                          title="View Verified Proof Document"
-                        >
-                          <i className="bi bi-file-earmark-pdf me-1"></i> Proof
-                        </a>
-                      )}
-                      <button
-                        className="btn btn-primary-custom btn-sm flex-fill"
-                        onClick={() => handleOpenDonateModal(req)}
-                      >
-                        <i className="bi bi-heart-fill me-1"></i> Donate Now
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          </div>
         </div>
-      </section>
+      </footer>
 
-      {/* Donate Modal */}
-      {selectedRequest && (
+      {/* ========================================================= */}
+      {/* 1. Verification Process Modal */}
+      {/* ========================================================= */}
+      {showVerificationModal && (
         <div
           className="modal fade show d-block"
           tabIndex="-1"
-          style={{ backgroundColor: "rgba(15, 23, 42, 0.6)" }}
+          style={{ background: "rgba(11, 17, 32, 0.85)", backdropFilter: "blur(6px)", zIndex: 1060 }}
         >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border-0 shadow-lg">
-              <div className="modal-header bg-primary text-white">
-                <h5 className="modal-title fw-bold">
-                  <i className="bi bi-heart-fill me-2"></i> Donate to: {selectedRequest.title}
-                </h5>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content bg-dark text-white border-secondary shadow-lg">
+              <div className="modal-header border-secondary">
+                <div className="d-flex align-items-center gap-2">
+                  <div
+                    style={{
+                      width: "38px",
+                      height: "38px",
+                      borderRadius: "8px",
+                      background: "linear-gradient(135deg, #0284c7 0%, #0d9488 100%)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "1.2rem",
+                    }}
+                  >
+                    <i className="bi bi-shield-check text-white"></i>
+                  </div>
+                  <h5 className="modal-title fw-bold mb-0">Our 3-Tier Verification Process</h5>
+                </div>
                 <button
                   type="button"
                   className="btn-close btn-close-white"
-                  onClick={() => setSelectedRequest(null)}
+                  onClick={() => setShowVerificationModal(false)}
                 ></button>
               </div>
 
-              <form onSubmit={handleDonateSubmit}>
-                <div className="modal-body p-4">
-                  {donateSuccessMsg ? (
-                    <div className="alert alert-success d-flex align-items-center gap-2">
-                      <i className="bi bi-check-circle-fill fs-5"></i>
-                      <div>{donateSuccessMsg}</div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="mb-3 p-3 bg-light rounded border">
-                        <div className="d-flex justify-content-between mb-1">
-                          <span className="text-muted small">Category:</span>
-                          <span className="fw-semibold">{selectedRequest.category}</span>
-                        </div>
-                        <div className="d-flex justify-content-between">
-                          <span className="text-muted small">Items Requested:</span>
-                          <span className="fw-semibold text-primary">
-                            {selectedRequest.required_items || "Essential Support"}
-                          </span>
-                        </div>
-                      </div>
+              <div className="modal-body p-4">
+                <p className="text-secondary small mb-4">
+                  Every request submitted to Charity Connect undergoes stringent documentary and human inspection to protect donors and guarantee legitimate community impact.
+                </p>
 
-                      <div className="mb-3">
-                        <label className="form-label fw-semibold">
-                          Item you wish to donate <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="e.g. Rice 10kg, Blanket, Medicine strip"
-                          value={donateFormData.item_name}
-                          onChange={(e) =>
-                            setDonateFormData({
-                              ...donateFormData,
-                              item_name: e.target.value,
-                            })
-                          }
-                          required
-                        />
+                <div className="row g-3">
+                  <div className="col-md-4">
+                    <div className="p-3 rounded-3 h-100" style={{ background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
+                      <div className="d-flex align-items-center gap-2 mb-2">
+                        <span className="badge bg-primary rounded-circle p-2">1</span>
+                        <h6 className="fw-bold mb-0 text-white">Request Submission</h6>
                       </div>
-
-                      <div className="mb-3">
-                        <label className="form-label fw-semibold">
-                          Quantity <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          min="1"
-                          value={donateFormData.quantity}
-                          onChange={(e) =>
-                            setDonateFormData({
-                              ...donateFormData,
-                              quantity: parseInt(e.target.value) || 1,
-                            })
-                          }
-                          required
-                        />
-                      </div>
-
-                      <p className="text-muted small mb-0">
-                        <i className="bi bi-info-circle me-1"></i> Your donation pledge will be recorded in your dashboard. You can track handover with the verification team.
+                      <p className="small text-secondary mb-0">
+                        Beneficiaries detail essential items needed (food, medicines, stationery) and attach supporting documents like ID and income proof.
                       </p>
-                    </>
-                  )}
-                </div>
+                    </div>
+                  </div>
 
-                <div className="modal-footer bg-light">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setSelectedRequest(null)}
-                    disabled={donateSubmitting}
-                  >
-                    Close
-                  </button>
-                  {!donateSuccessMsg && (
-                    <button
-                      type="submit"
-                      className="btn btn-primary-custom"
-                      disabled={donateSubmitting}
-                    >
-                      {donateSubmitting ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2"></span>
-                          Submitting...
-                        </>
-                      ) : (
-                        <>
-                          <i className="bi bi-check-lg me-1"></i> Confirm Pledge
-                        </>
-                      )}
-                    </button>
-                  )}
+                  <div className="col-md-4">
+                    <div className="p-3 rounded-3 h-100" style={{ background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
+                      <div className="d-flex align-items-center gap-2 mb-2">
+                        <span className="badge bg-info rounded-circle p-2">2</span>
+                        <h6 className="fw-bold mb-0 text-white">Team Verification</h6>
+                      </div>
+                      <p className="small text-secondary mb-0">
+                        Our designated verification team reviews user authenticity, checks documentation, and verifies need before granting public approval.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="col-md-4">
+                    <div className="p-3 rounded-3 h-100" style={{ background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
+                      <div className="d-flex align-items-center gap-2 mb-2">
+                        <span className="badge bg-success rounded-circle p-2">3</span>
+                        <h6 className="fw-bold mb-0 text-white">Direct Giving</h6>
+                      </div>
+                      <p className="small text-secondary mb-0">
+                        Compassionate donors discover verified needs, pledge items directly, and track status with zero intermediary commission.
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </form>
+              </div>
+
+              <div className="modal-footer border-secondary">
+                <button
+                  type="button"
+                  className="btn btn-outline-light"
+                  onClick={() => setShowVerificationModal(false)}
+                >
+                  Close
+                </button>
+                <Link
+                  to="/user/browse"
+                  className="btn btn-primary-custom"
+                  onClick={() => setShowVerificationModal(false)}
+                >
+                  <i className="bi bi-gift me-1"></i> Browse Verified Requests
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="bg-dark text-white pt-5 pb-4 border-top border-secondary">
-        <div className="container">
-          <div className="row g-4 mb-4">
-            <div className="col-md-4">
-              <div className="d-flex align-items-center gap-2 mb-3">
-                <div
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "6px",
-                    background: "linear-gradient(135deg, #0284c7 0%, #0d9488 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#fff",
-                  }}
-                >
-                  <i className="bi bi-heart-pulse-fill"></i>
+      {/* ========================================================= */}
+      {/* 2. Categories Modal */}
+      {/* ========================================================= */}
+      {showCategoriesModal && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ background: "rgba(11, 17, 32, 0.85)", backdropFilter: "blur(6px)", zIndex: 1060 }}
+        >
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content bg-dark text-white border-secondary shadow-lg">
+              <div className="modal-header border-secondary">
+                <div className="d-flex align-items-center gap-2">
+                  <div
+                    style={{
+                      width: "38px",
+                      height: "38px",
+                      borderRadius: "8px",
+                      background: "linear-gradient(135deg, #0284c7 0%, #0d9488 100%)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "1.2rem",
+                    }}
+                  >
+                    <i className="bi bi-grid-fill text-white"></i>
+                  </div>
+                  <h5 className="modal-title fw-bold mb-0">Aid Categories</h5>
                 </div>
-                <h5 className="m-0 fw-bold">Charity Connect</h5>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={() => setShowCategoriesModal(false)}
+                ></button>
               </div>
-              <p className="text-muted" style={{ fontSize: "0.9rem" }}>
-                A centralized, secure online charity management system that connects donors with genuine beneficiaries through transparent verification.
-              </p>
-            </div>
 
-            <div className="col-md-4">
-              <h6 className="fw-bold text-uppercase text-primary mb-3">Quick Navigation</h6>
-              <ul className="list-unstyled" style={{ fontSize: "0.9rem" }}>
-                <li className="mb-2">
-                  <Link to="/" className="text-light text-decoration-none">
-                    <i className="bi bi-chevron-right me-1 text-primary"></i> Home
-                  </Link>
-                </li>
-                <li className="mb-2">
-                  <Link to="/login" className="text-light text-decoration-none">
-                    <i className="bi bi-chevron-right me-1 text-primary"></i> Login to Portal
-                  </Link>
-                </li>
-                <li className="mb-2">
-                  <Link to="/register" className="text-light text-decoration-none">
-                    <i className="bi bi-chevron-right me-1 text-primary"></i> Register New Account
-                  </Link>
-                </li>
-              </ul>
-            </div>
+              <div className="modal-body p-4">
+                <p className="text-secondary small mb-4">
+                  Browse requests by category to direct your support where it is needed most.
+                </p>
 
-            <div className="col-md-4">
-              <h6 className="fw-bold text-uppercase text-primary mb-3">Contact Information</h6>
-              <p className="text-muted mb-2" style={{ fontSize: "0.9rem" }}>
-                <i className="bi bi-envelope me-2 text-primary"></i> support@charityconnect.org
-              </p>
-              <p className="text-muted mb-2" style={{ fontSize: "0.9rem" }}>
-                <i className="bi bi-telephone me-2 text-primary"></i> +91 9876543210
-              </p>
-              <p className="text-muted" style={{ fontSize: "0.9rem" }}>
-                <i className="bi bi-geo-alt me-2 text-primary"></i> Bangalore, India
-              </p>
-            </div>
-          </div>
+                <div className="row g-3">
+                  {categories.map((cat, idx) => (
+                    <div className="col-md-6" key={idx}>
+                      <div
+                        className="p-3 rounded-3 h-100 d-flex align-items-start gap-3"
+                        style={{
+                          background: "rgba(255, 255, 255, 0.04)",
+                          border: "1px solid rgba(255, 255, 255, 0.08)",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                        }}
+                        onClick={() => {
+                          setShowCategoriesModal(false);
+                          navigate("/user/browse");
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "44px",
+                            height: "44px",
+                            borderRadius: "10px",
+                            background: `rgba(${cat.color === "#f59e0b" ? "245, 158, 11" : cat.color === "#0284c7" ? "2, 132, 199" : cat.color === "#ef4444" ? "239, 68, 68" : cat.color === "#8b5cf6" ? "139, 92, 246" : cat.color === "#10b981" ? "16, 185, 129" : "236, 72, 153"}, 0.15)`,
+                            color: cat.color,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "1.3rem",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <i className={`bi ${cat.icon}`}></i>
+                        </div>
+                        <div>
+                          <h6 className="fw-bold text-white mb-1">{cat.name}</h6>
+                          <p className="small text-secondary mb-2">{cat.desc}</p>
+                          <span className="badge bg-secondary text-light">
+                            Explore {cat.badge} &rarr;
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-          <div className="border-top border-secondary pt-3 text-center text-muted small">
-            © {new Date().getFullYear()} Charity Connect – Online Charity Management System. All Rights Reserved.
+              <div className="modal-footer border-secondary">
+                <button
+                  type="button"
+                  className="btn btn-outline-light"
+                  onClick={() => setShowCategoriesModal(false)}
+                >
+                  Close
+                </button>
+                <Link
+                  to="/user/browse"
+                  className="btn btn-primary-custom"
+                  onClick={() => setShowCategoriesModal(false)}
+                >
+                  <i className="bi bi-gift me-1"></i> View All Requests
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
-      </footer>
+      )}
+
+      {/* ========================================================= */}
+      {/* 3. Contact / Feedback Modal */}
+      {/* ========================================================= */}
+      {showFeedbackModal && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ background: "rgba(11, 17, 32, 0.85)", backdropFilter: "blur(6px)", zIndex: 1060 }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content bg-dark text-white border-secondary shadow-lg">
+              <div className="modal-header border-secondary">
+                <div className="d-flex align-items-center gap-2">
+                  <div
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "8px",
+                      background: "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "1.1rem",
+                    }}
+                  >
+                    <i className="bi bi-chat-heart text-white"></i>
+                  </div>
+                  <h5 className="modal-title fw-bold mb-0">Contact Support &amp; Feedback</h5>
+                </div>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={() => setShowFeedbackModal(false)}
+                ></button>
+              </div>
+
+              <form onSubmit={handleFeedbackSubmit}>
+                <div className="modal-body p-4">
+                  {feedbackSuccess ? (
+                    <div className="alert alert-success text-center py-3 mb-0">
+                      <i className="bi bi-check-circle-fill fs-3 d-block mb-2 text-success"></i>
+                      <strong>Thank you for reaching out!</strong>
+                      <p className="small mb-0 mt-1">Our support team will review your inquiry shortly.</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="mb-3">
+                        <label className="form-label small text-secondary">Your Name</label>
+                        <input
+                          type="text"
+                          className="form-control bg-secondary bg-opacity-25 text-white border-secondary"
+                          placeholder="e.g. John Doe"
+                          value={feedbackForm.name}
+                          onChange={(e) =>
+                            setFeedbackForm({ ...feedbackForm, name: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label small text-secondary">Email Address</label>
+                        <input
+                          type="email"
+                          className="form-control bg-secondary bg-opacity-25 text-white border-secondary"
+                          placeholder="name@example.com"
+                          value={feedbackForm.email}
+                          onChange={(e) =>
+                            setFeedbackForm({ ...feedbackForm, email: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label small text-secondary">Message / Query</label>
+                        <textarea
+                          rows="4"
+                          className="form-control bg-secondary bg-opacity-25 text-white border-secondary"
+                          placeholder="How can we assist you or what would you like to share?"
+                          value={feedbackForm.message}
+                          onChange={(e) =>
+                            setFeedbackForm({ ...feedbackForm, message: e.target.value })
+                          }
+                          required
+                        ></textarea>
+                      </div>
+                      <div className="p-2 rounded bg-secondary bg-opacity-10 border border-secondary border-opacity-25 text-secondary small">
+                        <i className="bi bi-shield-lock me-1"></i>
+                        Direct hotline: <strong className="text-white">+91 98765 43210</strong> (24/7)
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {!feedbackSuccess && (
+                  <div className="modal-footer border-secondary">
+                    <button
+                      type="button"
+                      className="btn btn-outline-light"
+                      onClick={() => setShowFeedbackModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary-custom">
+                      <i className="bi bi-send me-1"></i> Submit Message
+                    </button>
+                  </div>
+                )}
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { clearAuthSession, getAuthToken, getAuthRole, getAuthUser } from "../utils/authStorage";
 
-function Navbar() {
+function Navbar({ onOpenVerification, onOpenCategories }) {
   const navigate = useNavigate();
   const token = getAuthToken();
   const role = getAuthRole();
@@ -63,19 +63,39 @@ function Navbar() {
               </Link>
             </li>
             <li className="nav-item">
-              <a href="/#how-it-works" className="nav-link text-light px-3">
-                <i className="bi bi-shield-check me-1"></i> Verification Process
-              </a>
+              {onOpenVerification ? (
+                <button
+                  type="button"
+                  className="nav-link text-light px-3 btn btn-link border-0 shadow-none text-decoration-none"
+                  onClick={onOpenVerification}
+                >
+                  <i className="bi bi-shield-check me-1"></i> Verification Process
+                </button>
+              ) : (
+                <Link to="/user/browse" className="nav-link text-light px-3">
+                  <i className="bi bi-shield-check me-1"></i> Verification Process
+                </Link>
+              )}
             </li>
             <li className="nav-item">
-              <a href="/#categories" className="nav-link text-light px-3">
-                <i className="bi bi-grid me-1"></i> Categories
-              </a>
+              {onOpenCategories ? (
+                <button
+                  type="button"
+                  className="nav-link text-light px-3 btn btn-link border-0 shadow-none text-decoration-none"
+                  onClick={onOpenCategories}
+                >
+                  <i className="bi bi-grid me-1"></i> Categories
+                </button>
+              ) : (
+                <Link to="/user/browse" className="nav-link text-light px-3">
+                  <i className="bi bi-grid me-1"></i> Categories
+                </Link>
+              )}
             </li>
             <li className="nav-item">
-              <a href="/#requests" className="nav-link text-light px-3">
+              <Link to="/user/browse" className="nav-link text-light px-3">
                 <i className="bi bi-gift me-1"></i> Verified Requests
-              </a>
+              </Link>
             </li>
 
             {token ? (
