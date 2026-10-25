@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import UserLayout from "../../layout/UserLayout";
 import { getProfile, updateProfile } from "../../services/userService";
+import {
+  validateName,
+  validatePhone,
+  validateAddress,
+  sanitizePhoneInput,
+} from "../../utils/validators";
 
 function Profile() {
   const [profile, setProfile] = useState({
@@ -11,6 +17,8 @@ function Profile() {
     status: "",
     created_at: "",
   });
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [alertInfo, setAlertInfo] = useState({ text: "", type: "" });
@@ -33,17 +41,63 @@ function Profile() {
     }
   };
 
+  const validateField = (field, value) => {
+    switch (field) {
+      case "name":
+        return validateName(value);
+      case "phone":
+        return validatePhone(value);
+      case "address":
+        return validateAddress(value, 6);
+      default:
+        return "";
+    }
+  };
+
   const handleChange = (e) => {
-    setProfile({
-      ...profile,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    const finalValue = name === "phone" ? sanitizePhoneInput(value) : value;
+    setProfile((prev) => ({
+      ...prev,
+      [name]: finalValue,
+    }));
+
+    if (touched[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: validateField(name, finalValue),
+      }));
+    }
+  };
+
+  const handleBlur = (field) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    setErrors((prev) => ({
+      ...prev,
+      [field]: validateField(field, profile[field]),
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSaving(true);
     setAlertInfo({ text: "", type: "" });
+
+    const nameErr = validateName(profile.name);
+    const phoneErr = validatePhone(profile.phone);
+    const addrErr = validateAddress(profile.address, 6);
+
+    setErrors({ name: nameErr, phone: phoneErr, address: addrErr });
+    setTouched({ name: true, phone: true, address: true });
+
+    if (nameErr || phoneErr || addrErr) {
+      setAlertInfo({
+        text: "Please correct the highlighted fields before saving.",
+        type: "danger",
+      });
+      return;
+    }
+
+    setSaving(true);
 
     try {
       const res = await updateProfile({
@@ -110,18 +164,22 @@ function Profile() {
                   <div className="spinner-border text-primary" role="status"></div>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
                   <div className="row mb-3">
                     <div className="col-md-6">
-                      <label className="form-label fw-semibold small">Full Name</label>
+                      <label className="form-label fw-semibold small">Full Name <span className="text-danger">*</span></label>
                       <input
                         type="text"
                         name="name"
-                        className="form-control"
+                        className={`form-control ${touched.name ? (errors.name ? "is-invalid" : "is-valid") : ""}`}
                         value={profile.name || ""}
                         onChange={handleChange}
+                        onBlur={() => handleBlur("name")}
                         required
                       />
+                      {touched.name && errors.name && (
+                        <div className="invalid-feedback d-block">{errors.name}</div>
+                      )}
                     </div>
 
                     <div className="col-md-6">
@@ -138,15 +196,27 @@ function Profile() {
 
                   <div className="row mb-3">
                     <div className="col-md-6">
-                      <label className="form-label fw-semibold small">Phone Number</label>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <label className="form-label fw-semibold small mb-1">
+                          Phone Number <span className="text-danger">*</span>
+                        </label>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+                          10 digits only
+                        </small>
+                      </div>
                       <input
-                        type="text"
+                        type="tel"
                         name="phone"
-                        className="form-control"
+                        maxLength={10}
+                        className={`form-control ${touched.phone ? (errors.phone ? "is-invalid" : "is-valid") : ""}`}
                         value={profile.phone || ""}
                         onChange={handleChange}
+                        onBlur={() => handleBlur("phone")}
                         required
                       />
+                      {touched.phone && errors.phone && (
+                        <div className="invalid-feedback d-block">{errors.phone}</div>
+                      )}
                     </div>
 
                     <div className="col-md-6">
@@ -161,15 +231,21 @@ function Profile() {
                   </div>
 
                   <div className="mb-4">
-                    <label className="form-label fw-semibold small">Residential Address</label>
+                    <label className="form-label fw-semibold small">
+                      Residential Address <span className="text-danger">*</span>
+                    </label>
                     <textarea
                       name="address"
-                      className="form-control"
+                      className={`form-control ${touched.address ? (errors.address ? "is-invalid" : "is-valid") : ""}`}
                       rows="3"
                       value={profile.address || ""}
                       onChange={handleChange}
+                      onBlur={() => handleBlur("address")}
                       required
                     ></textarea>
+                    {touched.address && errors.address && (
+                      <div className="invalid-feedback d-block">{errors.address}</div>
+                    )}
                   </div>
 
                   <div className="d-flex justify-content-end">

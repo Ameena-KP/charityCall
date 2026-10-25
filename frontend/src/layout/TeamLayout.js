@@ -3,7 +3,7 @@ import DashboardLayout from "./DashboardLayout";
 
 function TeamLayout({ title, subtitle, children }) {
   return (
-    <DashboardLayout title={title || "Verification Team Portal"} subtitle={subtitle}>
+    <DashboardLayout title={title || "Volunteer Portal"} subtitle={subtitle}>
       {children}
     </DashboardLayout>
   );

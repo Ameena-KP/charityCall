@@ -23,7 +23,7 @@ function Sidebar({ isMobileOpen, closeMobileSidebar }) {
 
   const getRoleLabel = () => {
     if (role === "admin") return "Administrator";
-    if (role === "team") return "Verification Team";
+    if (role === "team") return "Volunteer";
     return "Donor / Beneficiary";
   };
 
@@ -125,6 +125,20 @@ function Sidebar({ isMobileOpen, closeMobileSidebar }) {
                 <i className="bi bi-chevron-right text-muted" style={{ fontSize: "0.75rem" }}></i>
               </NavLink>
 
+              <NavLink
+                to="/user/published-donations"
+                className={({ isActive }) =>
+                  `sidebar-nav-item ${isActive ? "active" : ""}`
+                }
+                onClick={closeMobileSidebar}
+              >
+                <span className="nav-link-content">
+                  <i className="bi bi-bag-heart-fill nav-link-icon text-danger"></i>
+                  <span>Offered Donations</span>
+                </span>
+                <i className="bi bi-chevron-right text-muted" style={{ fontSize: "0.75rem" }}></i>
+              </NavLink>
+
               <div className="sidebar-section-label mt-3">Account & Tools</div>
               <NavLink
                 to="/user/notifications"
@@ -170,10 +184,10 @@ function Sidebar({ isMobileOpen, closeMobileSidebar }) {
             </>
           )}
 
-          {/* TEAM NAVIGATION */}
+          {/* VOLUNTEER NAVIGATION */}
           {role === "team" && (
             <>
-              <div className="sidebar-section-label">Verification Desk</div>
+              <div className="sidebar-section-label">Volunteer Desk</div>
               <NavLink
                 to="/team/dashboard"
                 className={({ isActive }) =>
@@ -259,7 +273,7 @@ function Sidebar({ isMobileOpen, closeMobileSidebar }) {
               >
                 <span className="nav-link-content">
                   <i className="bi bi-person-badge-fill nav-link-icon text-success"></i>
-                  <span>Team Approvals</span>
+                  <span>Volunteer Approvals</span>
                 </span>
                 <i className="bi bi-chevron-right text-muted" style={{ fontSize: "0.75rem" }}></i>
               </NavLink>

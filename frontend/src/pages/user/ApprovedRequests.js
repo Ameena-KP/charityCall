@@ -3,6 +3,7 @@ import UserLayout from "../../layout/UserLayout";
 import { getApprovedRequests } from "../../services/charityService";
 import { donateItem } from "../../services/donationService";
 import { getAuthUser } from "../../utils/authStorage";
+import { validateItemName, validateQuantity } from "../../utils/validators";
 
 function ApprovedRequests() {
   const currentUser = getAuthUser();
@@ -15,6 +16,8 @@ function ApprovedRequests() {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [itemName, setItemName] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [modalErrors, setModalErrors] = useState({});
+  const [modalTouched, setModalTouched] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
@@ -70,17 +73,33 @@ function ApprovedRequests() {
     setSelectedRequest(r);
     setItemName(r.required_items ? r.required_items.split(",")[0].trim() : "");
     setQuantity(1);
+    setModalErrors({});
+    setModalTouched({});
     setMessage({ text: "", type: "" });
   };
 
   const handleDonate = async (e) => {
     e.preventDefault();
-    if (!itemName) return;
+
+    const nameErr = validateItemName(itemName, 2, 100);
+    const qtyErr = validateQuantity(quantity, 10000);
+
+    setModalErrors({ itemName: nameErr, quantity: qtyErr });
+    setModalTouched({ itemName: true, quantity: true });
+
+    if (nameErr || qtyErr) {
+      setMessage({
+        text: "Please provide a valid item name and quantity.",
+        type: "danger",
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const res = await donateItem({
         request_id: selectedRequest.id,
-        item_name: itemName,
+        item_name: itemName.trim(),
         quantity: parseInt(quantity) || 1,
       });
 
@@ -288,12 +307,24 @@ function ApprovedRequests() {
                     </label>
                     <input
                       type="text"
-                      className="form-control"
+                      className={`form-control ${modalTouched.itemName ? (modalErrors.itemName ? "is-invalid" : "is-valid") : ""}`}
                       placeholder="e.g. Rice, Blankets, Medicines"
                       value={itemName}
-                      onChange={(e) => setItemName(e.target.value)}
+                      onChange={(e) => {
+                        setItemName(e.target.value);
+                        if (modalTouched.itemName) {
+                          setModalErrors((prev) => ({ ...prev, itemName: validateItemName(e.target.value, 2, 100) }));
+                        }
+                      }}
+                      onBlur={() => {
+                        setModalTouched((prev) => ({ ...prev, itemName: true }));
+                        setModalErrors((prev) => ({ ...prev, itemName: validateItemName(itemName, 2, 100) }));
+                      }}
                       required
                     />
+                    {modalTouched.itemName && modalErrors.itemName && (
+                      <div className="invalid-feedback d-block">{modalErrors.itemName}</div>
+                    )}
                   </div>
 
                   <div className="mb-3">
@@ -302,12 +333,25 @@ function ApprovedRequests() {
                     </label>
                     <input
                       type="number"
-                      className="form-control"
+                      className={`form-control ${modalTouched.quantity ? (modalErrors.quantity ? "is-invalid" : "is-valid") : ""}`}
                       min="1"
+                      max="10000"
                       value={quantity}
-                      onChange={(e) => setQuantity(e.target.value)}
+                      onChange={(e) => {
+                        setQuantity(e.target.value);
+                        if (modalTouched.quantity) {
+                          setModalErrors((prev) => ({ ...prev, quantity: validateQuantity(e.target.value, 10000) }));
+                        }
+                      }}
+                      onBlur={() => {
+                        setModalTouched((prev) => ({ ...prev, quantity: true }));
+                        setModalErrors((prev) => ({ ...prev, quantity: validateQuantity(quantity, 10000) }));
+                      }}
                       required
                     />
+                    {modalTouched.quantity && modalErrors.quantity && (
+                      <div className="invalid-feedback d-block">{modalErrors.quantity}</div>
+                    )}
                   </div>
 
                   <p className="text-muted small mb-0">

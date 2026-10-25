@@ -5,18 +5,43 @@ import { loginUser } from "../../services/userService";
 import { loginTeam } from "../../services/teamService";
 import { loginAdmin } from "../../services/adminService";
 import { setAuthSession } from "../../utils/authStorage";
+import { validateEmail, validatePassword } from "../../utils/validators";
 
 function Login() {
   const navigate = useNavigate();
   const [activeRole, setActiveRole] = useState("user"); // 'user' | 'team' | 'admin'
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const handleBlur = (field) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    if (field === "email") {
+      setErrors((prev) => ({ ...prev, email: validateEmail(email) }));
+    }
+    if (field === "password") {
+      setErrors((prev) => ({ ...prev, password: validatePassword(password, 1) }));
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMsg("");
+
+    const emailErr = validateEmail(email);
+    const passErr = !password ? "Password is required." : "";
+
+    setErrors({ email: emailErr, password: passErr });
+    setTouched({ email: true, password: true });
+
+    if (emailErr || passErr) {
+      setErrorMsg("Please enter a valid email and password.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -55,6 +80,8 @@ function Login() {
   const fillDemo = (roleType) => {
     setActiveRole(roleType);
     setErrorMsg("");
+    setErrors({});
+    setTouched({});
     if (roleType === "user") {
       setEmail("ameena@gmail.com");
       setPassword("123456");
@@ -119,7 +146,7 @@ function Login() {
                   setErrorMsg("");
                 }}
               >
-                <i className="bi bi-person-badge me-1"></i> Team
+                <i className="bi bi-person-badge me-1"></i> Volunteer
               </button>
               <button
                 type="button"
@@ -140,38 +167,52 @@ function Login() {
               </div>
             )}
 
-            <form onSubmit={handleLogin}>
+            <form onSubmit={handleLogin} noValidate>
               <div className="mb-3">
                 <label className="form-label fw-semibold small">Email Address</label>
-                <div className="input-group">
+                <div className="input-group has-validation">
                   <span className="input-group-text bg-light">
                     <i className="bi bi-envelope text-muted"></i>
                   </span>
                   <input
                     type="email"
-                    className="form-control"
+                    className={`form-control ${touched.email ? (errors.email ? "is-invalid" : "is-valid") : ""}`}
                     placeholder="Enter your email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (touched.email) setErrors((prev) => ({ ...prev, email: validateEmail(e.target.value) }));
+                    }}
+                    onBlur={() => handleBlur("email")}
                     required
                   />
+                  {touched.email && errors.email && (
+                    <div className="invalid-feedback d-block">{errors.email}</div>
+                  )}
                 </div>
               </div>
 
               <div className="mb-4">
                 <label className="form-label fw-semibold small">Password</label>
-                <div className="input-group">
+                <div className="input-group has-validation">
                   <span className="input-group-text bg-light">
                     <i className="bi bi-key text-muted"></i>
                   </span>
                   <input
                     type="password"
-                    className="form-control"
+                    className={`form-control ${touched.password ? (errors.password ? "is-invalid" : "is-valid") : ""}`}
                     placeholder="Enter password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (touched.password) setErrors((prev) => ({ ...prev, password: !e.target.value ? "Password is required." : "" }));
+                    }}
+                    onBlur={() => handleBlur("password")}
                     required
                   />
+                  {touched.password && errors.password && (
+                    <div className="invalid-feedback d-block">{errors.password}</div>
+                  )}
                 </div>
               </div>
 

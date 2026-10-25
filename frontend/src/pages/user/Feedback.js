@@ -1,24 +1,53 @@
 import React, { useState } from "react";
 import UserLayout from "../../layout/UserLayout";
 import { submitFeedback } from "../../services/userService";
+import { validateDescription } from "../../utils/validators";
 
 function Feedback() {
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [touched, setTouched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [alertInfo, setAlertInfo] = useState({ text: "", type: "" });
 
+  const validate = (val) => {
+    return validateDescription(val, 10, 1000);
+  };
+
+  const handleChange = (e) => {
+    const val = e.target.value;
+    setMessage(val);
+    if (touched) {
+      setError(validate(val));
+    }
+  };
+
+  const handleBlur = () => {
+    setTouched(true);
+    setError(validate(message));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    setTouched(true);
+    const err = validate(message);
+    setError(err);
+
+    if (err) {
+      setAlertInfo({ text: err, type: "danger" });
+      return;
+    }
 
     setLoading(true);
     setAlertInfo({ text: "", type: "" });
 
     try {
-      const res = await submitFeedback(message);
+      const res = await submitFeedback(message.trim());
       if (res.success) {
-        setAlertInfo({ text: res.message, type: "success" });
+        setAlertInfo({ text: res.message || "Feedback submitted successfully!", type: "success" });
         setMessage("");
+        setTouched(false);
+        setError("");
       }
     } catch (err) {
       setAlertInfo({
@@ -59,19 +88,29 @@ function Feedback() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} noValidate>
                 <div className="mb-3">
-                  <label className="form-label fw-semibold small">
-                    Your Message / Suggestion <span className="text-danger">*</span>
-                  </label>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="form-label fw-semibold small mb-1">
+                      Your Message / Suggestion <span className="text-danger">*</span>
+                    </label>
+                    <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+                      Min. 10 chars ({message.length}/1000)
+                    </small>
+                  </div>
                   <textarea
-                    className="form-control"
+                    className={`form-control ${touched ? (error ? "is-invalid" : "is-valid") : ""}`}
                     rows="5"
+                    maxLength={1000}
                     placeholder="Tell us about your experience, suggestions for new features, or any issues you encountered..."
                     value={message}
-                    onChange={(e) => setMessage(e.target.value)}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
                     required
                   ></textarea>
+                  {touched && error && (
+                    <div className="invalid-feedback d-block">{error}</div>
+                  )}
                 </div>
 
                 <div className="d-flex justify-content-end">

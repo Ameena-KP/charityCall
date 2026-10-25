@@ -25,7 +25,45 @@ const registerUser = async (req, res) => {
     if (!name || !email || !phone || !password || !address) {
         return res.status(400).json({
             success: false,
-            message: "All fields are required"
+            message: "All fields (Name, Email, Mobile, Password, Address) are required."
+        });
+    }
+
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2 || trimmedName.length > 60) {
+        return res.status(400).json({
+            success: false,
+            message: "Full name must be between 2 and 60 characters."
+        });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email.trim())) {
+        return res.status(400).json({
+            success: false,
+            message: "Please provide a valid email address."
+        });
+    }
+
+    const cleanPhone = phone.toString().replace(/\D/g, "");
+    if (cleanPhone.length !== 10) {
+        return res.status(400).json({
+            success: false,
+            message: "Mobile number must be exactly 10 digits."
+        });
+    }
+
+    if (password.length < 6) {
+        return res.status(400).json({
+            success: false,
+            message: "Password must be at least 6 characters long."
+        });
+    }
+
+    if (address.trim().length < 6) {
+        return res.status(400).json({
+            success: false,
+            message: "Please provide a complete residential address (min 6 characters)."
         });
     }
 
@@ -204,40 +242,56 @@ const updateProfile = (req, res) => {
     } = req.body;
 
     if (!name || !phone || !address) {
-
         return res.status(400).json({
             success: false,
-            message: "All fields are required"
+            message: "All fields (Name, Phone, Address) are required."
         });
+    }
 
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2 || trimmedName.length > 60) {
+        return res.status(400).json({
+            success: false,
+            message: "Full name must be between 2 and 60 characters."
+        });
+    }
+
+    const cleanPhone = phone.toString().replace(/\D/g, "");
+    if (cleanPhone.length !== 10) {
+        return res.status(400).json({
+            success: false,
+            message: "Mobile number must be exactly 10 digits."
+        });
+    }
+
+    if (address.trim().length < 6) {
+        return res.status(400).json({
+            success: false,
+            message: "Please enter a valid residential address (min 6 characters)."
+        });
     }
 
     updateUserProfile(
         {
             id: userId,
-            name,
-            phone,
-            address
+            name: trimmedName,
+            phone: cleanPhone,
+            address: address.trim()
         },
         (err, result) => {
-
             if (err) {
-
                 return res.status(500).json({
                     success: false,
                     message: err.message
                 });
-
             }
 
             res.status(200).json({
                 success: true,
                 message: "Profile Updated Successfully"
             });
-
         }
     );
-
 };
 
 const getNotifications = (req, res) => {
@@ -263,8 +317,8 @@ const markNotificationRead = (req, res) => {
 const submitFeedback = (req, res) => {
     const userId = req.user.id;
     const { message } = req.body;
-    if (!message || message.trim() === "") {
-        return res.status(400).json({ success: false, message: "Feedback message cannot be empty" });
+    if (!message || message.trim().length < 10) {
+        return res.status(400).json({ success: false, message: "Feedback message must be at least 10 characters long." });
     }
     saveFeedback(userId, message.trim(), (err, result) => {
         if (err) {

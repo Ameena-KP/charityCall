@@ -20,6 +20,27 @@ const createRequest = (req, res) => {
         });
     }
 
+    if (title.trim().length < 5 || title.trim().length > 150) {
+        return res.status(400).json({
+            success: false,
+            message: "Title must be between 5 and 150 characters."
+        });
+    }
+
+    if (description.trim().length < 15) {
+        return res.status(400).json({
+            success: false,
+            message: "Please provide a detailed description (at least 15 characters)."
+        });
+    }
+
+    if (required_items && required_items.trim().length > 0 && required_items.trim().length < 2) {
+        return res.status(400).json({
+            success: false,
+            message: "Required items description must be at least 2 characters."
+        });
+    }
+
     createCharityRequest(
         {
             user_id,

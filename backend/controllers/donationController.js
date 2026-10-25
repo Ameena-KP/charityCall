@@ -18,6 +18,22 @@ const donateItem = (req, res) => {
         });
     }
 
+    const trimmedItem = item_name.trim();
+    if (trimmedItem.length < 2 || trimmedItem.length > 100) {
+        return res.status(400).json({
+            success: false,
+            message: "Item name must be between 2 and 100 characters."
+        });
+    }
+
+    const parsedQty = Number(quantity);
+    if (isNaN(parsedQty) || parsedQty < 1 || parsedQty > 10000) {
+        return res.status(400).json({
+            success: false,
+            message: "Donation quantity must be a valid number between 1 and 10,000."
+        });
+    }
+
     // Verify charity request exists and prevent user from donating to their own request
     const checkSql = "SELECT user_id FROM charity_requests WHERE id = ?";
     db.query(checkSql, [request_id], (err, rows) => {

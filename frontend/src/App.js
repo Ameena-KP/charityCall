@@ -16,8 +16,9 @@ import MyDonations from "./pages/user/MyDonations";
 import UserNotifications from "./pages/user/Notifications";
 import UserFeedback from "./pages/user/Feedback";
 import UserProfile from "./pages/user/Profile";
+import PublishedDonations from "./pages/user/PublishedDonations";
 
-// Team Pages
+// Volunteer (Team) Pages
 import TeamDashboard from "./pages/team/Dashboard";
 import TeamApprovedRequests from "./pages/team/ApprovedRequests";
 import TeamDonations from "./pages/team/Donations";
@@ -106,10 +107,26 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/user/published-donations"
+          element={
+            <ProtectedRoute allowedRoles={["user", "team", "admin"]}>
+              <PublishedDonations />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Team Portal Routes */}
+        {/* Volunteer (Team) Portal Routes */}
         <Route
           path="/team/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["team"]}>
+              <TeamDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/volunteer/dashboard"
           element={
             <ProtectedRoute allowedRoles={["team"]}>
               <TeamDashboard />
@@ -125,7 +142,23 @@ function App() {
           }
         />
         <Route
+          path="/volunteer/approved"
+          element={
+            <ProtectedRoute allowedRoles={["team"]}>
+              <TeamApprovedRequests />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/team/donations"
+          element={
+            <ProtectedRoute allowedRoles={["team"]}>
+              <TeamDonations />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/volunteer/donations"
           element={
             <ProtectedRoute allowedRoles={["team"]}>
               <TeamDonations />

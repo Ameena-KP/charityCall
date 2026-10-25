@@ -27,39 +27,39 @@ function AdminTeams() {
   };
 
   const handleApprove = async (id, name) => {
-    if (!window.confirm(`Approve team registration for ${name}? They will be permitted to log in.`)) return;
+    if (!window.confirm(`Approve volunteer registration for ${name}? They will be permitted to log in.`)) return;
     try {
       setActionId(id);
       await approveTeam(id);
       setTeams(teams.map((t) => (t.id === id ? { ...t, status: "Approved" } : t)));
     } catch (err) {
-      alert("Failed to approve team member.");
+      alert("Failed to approve volunteer.");
     } finally {
       setActionId(null);
     }
   };
 
   const handleReject = async (id, name) => {
-    if (!window.confirm(`Reject team registration for ${name}?`)) return;
+    if (!window.confirm(`Reject volunteer registration for ${name}?`)) return;
     try {
       setActionId(id);
       await rejectTeam(id);
       setTeams(teams.map((t) => (t.id === id ? { ...t, status: "Rejected" } : t)));
     } catch (err) {
-      alert("Failed to reject team member.");
+      alert("Failed to reject volunteer.");
     } finally {
       setActionId(null);
     }
   };
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Permanently remove team member ${name}?`)) return;
+    if (!window.confirm(`Permanently remove volunteer ${name}?`)) return;
     try {
       setActionId(id);
       await deleteTeam(id);
       setTeams(teams.filter((t) => t.id !== id));
     } catch (err) {
-      alert("Failed to delete team member.");
+      alert("Failed to delete volunteer.");
     } finally {
       setActionId(null);
     }
@@ -73,7 +73,7 @@ function AdminTeams() {
 
   return (
     <AdminLayout
-      title="Team Member Management"
+      title="Volunteer Management"
       subtitle="Review pending volunteer registrations, grant system permissions, and manage verification staff"
     >
       {/* Alert if Pending Registrations */}
@@ -135,13 +135,13 @@ function AdminTeams() {
         {loading ? (
           <div className="text-center py-5">
             <div className="spinner-border text-primary" role="status"></div>
-            <p className="mt-2 text-muted">Loading team members...</p>
+            <p className="mt-2 text-muted">Loading volunteers...</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-5">
             <i className="bi bi-person-badge text-muted" style={{ fontSize: "2.5rem" }}></i>
-            <h5 className="mt-3 fw-bold">No Team Members Found</h5>
-            <p className="text-muted">No team members match the selected filter.</p>
+            <h5 className="mt-3 fw-bold">No Volunteers Found</h5>
+            <p className="text-muted">No volunteers match the selected filter.</p>
           </div>
         ) : (
           <div className="table-responsive">
@@ -149,7 +149,7 @@ function AdminTeams() {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Member Name</th>
+                  <th>Volunteer Name</th>
                   <th>Official Email</th>
                   <th>Contact Phone</th>
                   <th>Approval Status</th>

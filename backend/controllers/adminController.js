@@ -249,6 +249,13 @@ const sendNotification = (req, res) => {
         });
     }
 
+    if (message.trim().length < 5 || message.trim().length > 500) {
+        return res.status(400).json({
+            success: false,
+            message: "Notification message must be between 5 and 500 characters."
+        });
+    }
+
     insertNotification(user_id, message.trim(), (err, result) => {
         if (err) {
             return res.status(500).json({ success: false, message: err.message });

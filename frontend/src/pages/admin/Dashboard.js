@@ -57,7 +57,7 @@ function AdminDashboard() {
             <i className="bi bi-exclamation-triangle-fill fs-5"></i>
             <div>
               <strong>Action Required:</strong> You have{" "}
-              <strong>{stats.pendingTeams}</strong> team volunteer registration(s)
+              <strong>{stats.pendingTeams}</strong> volunteer registration(s)
               awaiting your approval!
             </div>
           </div>
@@ -85,7 +85,7 @@ function AdminDashboard() {
           </div>
         </div>
 
-        {/* Team Members */}
+        {/* Volunteers */}
         <div className="col-sm-6 col-lg-3">
           <div className="stat-card">
             <div className="stat-icon success">
@@ -93,7 +93,7 @@ function AdminDashboard() {
             </div>
             <div>
               <div className="stat-value">{stats.totalTeams}</div>
-              <p className="stat-label">Team Members</p>
+              <p className="stat-label">Volunteers</p>
               <small className="text-warning fw-semibold" style={{ fontSize: "0.72rem" }}>
                 {stats.pendingTeams || 0} pending approval
               </small>
@@ -191,7 +191,7 @@ function AdminDashboard() {
                   >
                     <i className="bi bi-person-check-fill text-success fs-5"></i>
                     <div>
-                      <div className="fw-semibold small">Approve Teams</div>
+                      <div className="fw-semibold small">Approve Volunteers</div>
                       <small className="text-muted">{stats.pendingTeams || 0} pending</small>
                     </div>
                   </Link>

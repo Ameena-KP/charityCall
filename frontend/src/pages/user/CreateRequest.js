@@ -2,6 +2,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserLayout from "../../layout/UserLayout";
 import { createCharityRequest } from "../../services/charityService";
+import {
+  validateTitle,
+  validateItemName,
+  validateDescription,
+  validateDocumentFile,
+} from "../../utils/validators";
 
 function CreateRequest() {
   const navigate = useNavigate();
@@ -11,22 +17,65 @@ function CreateRequest() {
     required_items: "",
     description: "",
   });
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [documentFile, setDocumentFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
   const categories = ["Food", "Clothing", "Medicine", "Education", "Shelter", "Medical", "Other"];
 
+  const validateField = (name, value) => {
+    switch (name) {
+      case "title":
+        return validateTitle(value, 5, 150);
+      case "required_items":
+        return validateItemName(value, 3, 200);
+      case "description":
+        return validateDescription(value, 15, 2000);
+      default:
+        return "";
+    }
+  };
+
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (touched[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: validateField(name, value),
+      }));
+    }
+  };
+
+  const handleBlur = (field) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    setErrors((prev) => ({
+      ...prev,
+      [field]: validateField(field, formData[field]),
+    }));
   };
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setDocumentFile(e.target.files[0]);
+      const file = e.target.files[0];
+      const fileErr = validateDocumentFile(file, ["pdf", "png", "jpg", "jpeg"], 5);
+      if (fileErr) {
+        setErrors((prev) => ({ ...prev, document: fileErr }));
+        setDocumentFile(null);
+        e.target.value = "";
+      } else {
+        setErrors((prev) => ({ ...prev, document: "" }));
+        setDocumentFile(file);
+      }
+    } else {
+      setDocumentFile(null);
+      setErrors((prev) => ({ ...prev, document: "" }));
     }
   };
 
@@ -34,16 +83,39 @@ function CreateRequest() {
     e.preventDefault();
     setMessage({ text: "", type: "" });
 
-    if (!formData.title || !formData.description) {
-      setMessage({ text: "Please enter a title and description.", type: "danger" });
+    const titleErr = validateTitle(formData.title, 5, 150);
+    const itemsErr = validateItemName(formData.required_items, 3, 200);
+    const descErr = validateDescription(formData.description, 15, 2000);
+    const fileErr = documentFile
+      ? validateDocumentFile(documentFile, ["pdf", "png", "jpg", "jpeg"], 5)
+      : "";
+
+    setErrors({
+      title: titleErr,
+      required_items: itemsErr,
+      description: descErr,
+      document: fileErr,
+    });
+    setTouched({
+      title: true,
+      required_items: true,
+      description: true,
+      document: true,
+    });
+
+    if (titleErr || itemsErr || descErr || fileErr) {
+      setMessage({
+        text: "Please correct the errors in the application before submitting.",
+        type: "danger",
+      });
       return;
     }
 
     const data = new FormData();
-    data.append("title", formData.title);
+    data.append("title", formData.title.trim());
     data.append("category", formData.category);
-    data.append("required_items", formData.required_items);
-    data.append("description", formData.description);
+    data.append("required_items", formData.required_items.trim());
+    data.append("description", formData.description.trim());
     if (documentFile) {
       data.append("document", documentFile);
     }
@@ -93,20 +165,29 @@ function CreateRequest() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} noValidate>
                 <div className="mb-3">
-                  <label className="form-label fw-semibold small">
-                    Request Title <span className="text-danger">*</span>
-                  </label>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="form-label fw-semibold small mb-1">
+                      Request Title <span className="text-danger">*</span>
+                    </label>
+                    <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+                      Min. 5 characters
+                    </small>
+                  </div>
                   <input
                     type="text"
                     name="title"
-                    className="form-control"
+                    className={`form-control ${touched.title ? (errors.title ? "is-invalid" : "is-valid") : ""}`}
                     placeholder="e.g. Monthly Grocery Support for Low-Income Family"
                     value={formData.title}
                     onChange={handleChange}
+                    onBlur={() => handleBlur("title")}
                     required
                   />
+                  {touched.title && errors.title && (
+                    <div className="invalid-feedback d-block">{errors.title}</div>
+                  )}
                 </div>
 
                 <div className="row mb-3">
@@ -130,37 +211,56 @@ function CreateRequest() {
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label fw-semibold small">
-                      Specific Items Needed <span className="text-danger">*</span>
-                    </label>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <label className="form-label fw-semibold small mb-1">
+                        Specific Items Needed <span className="text-danger">*</span>
+                      </label>
+                      <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+                        Min. 3 characters
+                      </small>
+                    </div>
                     <input
                       type="text"
                       name="required_items"
-                      className="form-control"
+                      className={`form-control ${touched.required_items ? (errors.required_items ? "is-invalid" : "is-valid") : ""}`}
                       placeholder="e.g. Rice 10kg, Cooking Oil 2L, Blankets (3)"
                       value={formData.required_items}
                       onChange={handleChange}
+                      onBlur={() => handleBlur("required_items")}
                       required
                     />
-                    <small className="text-muted" style={{ fontSize: "0.75rem" }}>
-                      List items and quantities so donors can pledge exact needs.
-                    </small>
+                    {touched.required_items && errors.required_items ? (
+                      <div className="invalid-feedback d-block">{errors.required_items}</div>
+                    ) : (
+                      <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+                        List items and quantities so donors can pledge exact needs.
+                      </small>
+                    )}
                   </div>
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label fw-semibold small">
-                    Detailed Explanation of Need <span className="text-danger">*</span>
-                  </label>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="form-label fw-semibold small mb-1">
+                      Detailed Explanation of Need <span className="text-danger">*</span>
+                    </label>
+                    <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+                      Min. 15 characters
+                    </small>
+                  </div>
                   <textarea
                     name="description"
-                    className="form-control"
+                    className={`form-control ${touched.description ? (errors.description ? "is-invalid" : "is-valid") : ""}`}
                     rows="4"
                     placeholder="Describe your current circumstances, reason for need, and how this aid will help..."
                     value={formData.description}
                     onChange={handleChange}
+                    onBlur={() => handleBlur("description")}
                     required
                   ></textarea>
+                  {touched.description && errors.description && (
+                    <div className="invalid-feedback d-block">{errors.description}</div>
+                  )}
                 </div>
 
                 <div className="mb-4">
@@ -169,13 +269,17 @@ function CreateRequest() {
                   </label>
                   <input
                     type="file"
-                    className="form-control"
+                    className={`form-control ${errors.document ? "is-invalid" : ""}`}
                     accept=".pdf,.png,.jpg,.jpeg"
                     onChange={handleFileChange}
                   />
-                  <small className="text-muted d-block mt-1" style={{ fontSize: "0.75rem" }}>
-                    Accepted formats: PDF, PNG, JPG (Medical certificates, income slips, ration cards, hospital bills).
-                  </small>
+                  {errors.document ? (
+                    <div className="invalid-feedback d-block">{errors.document}</div>
+                  ) : (
+                    <small className="text-muted d-block mt-1" style={{ fontSize: "0.75rem" }}>
+                      Accepted formats: PDF, PNG, JPG under 5MB (Medical certificates, income slips, ration cards, hospital bills).
+                    </small>
+                  )}
                 </div>
 
                 <div className="d-flex justify-content-end gap-2">

@@ -10,7 +10,7 @@ function Navbar({ onOpenVerification, onOpenCategories }) {
 
   const getDashboardPath = () => {
     if (role === "admin") return "/admin/dashboard";
-    if (role === "team") return "/team/dashboard";
+    if (role === "team") return "/volunteer/dashboard";
     return "/user/browse";
   };
 
@@ -97,6 +97,11 @@ function Navbar({ onOpenVerification, onOpenCategories }) {
                 <i className="bi bi-gift me-1"></i> Verified Requests
               </Link>
             </li>
+            <li className="nav-item">
+              <Link to="/user/published-donations" className="nav-link text-light px-3">
+                <i className="bi bi-box2-heart me-1"></i> Offered Donations
+              </Link>
+            </li>
 
             {token ? (
               <li className="nav-item d-flex align-items-center gap-2 ms-lg-3 mt-2 mt-lg-0">
@@ -105,7 +110,7 @@ function Navbar({ onOpenVerification, onOpenCategories }) {
                   className="btn btn-primary-custom d-flex align-items-center gap-2"
                 >
                   <i className="bi bi-layout-sidebar"></i>
-                  <span>Go to Portal ({user?.name || role})</span>
+                  <span>Go to Portal ({user?.name || (role === "team" ? "Volunteer" : role)})</span>
                 </Link>
                 <button
                   onClick={handleLogout}

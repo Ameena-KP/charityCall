@@ -16,11 +16,42 @@ const registerTeam = async (req, res) => {
     if (!name || !email || !phone || !password) {
         return res.status(400).json({
             success: false,
-            message: "All fields (name, email, phone, password) are required"
+            message: "All fields (Name, Email, Mobile, Password) are required."
         });
     }
 
-    findTeamByEmail(email, async (err, result) => {
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2 || trimmedName.length > 60) {
+        return res.status(400).json({
+            success: false,
+            message: "Full name must be between 2 and 60 characters."
+        });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email.trim())) {
+        return res.status(400).json({
+            success: false,
+            message: "Please enter a valid email address."
+        });
+    }
+
+    const cleanPhone = phone.toString().replace(/\D/g, "");
+    if (cleanPhone.length !== 10) {
+        return res.status(400).json({
+            success: false,
+            message: "Mobile number must be exactly 10 digits."
+        });
+    }
+
+    if (password.length < 6) {
+        return res.status(400).json({
+            success: false,
+            message: "Password must be at least 6 characters long."
+        });
+    }
+
+    findTeamByEmail(email.trim(), async (err, result) => {
         if (err) {
             return res.status(500).json({ success: false, message: err.message });
         }

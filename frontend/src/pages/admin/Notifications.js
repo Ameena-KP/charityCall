@@ -5,12 +5,15 @@ import {
   getAdminNotifications,
   getAllUsers,
 } from "../../services/adminService";
+import { validateDescription } from "../../utils/validators";
 
 function AdminNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [users, setUsers] = useState([]);
   const [targetUser, setTargetUser] = useState("all");
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [touched, setTouched] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [alertInfo, setAlertInfo] = useState({ text: "", type: "" });
@@ -41,7 +44,14 @@ function AdminNotifications() {
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    setTouched(true);
+    const msgErr = validateDescription(message, 5, 500);
+    setError(msgErr);
+
+    if (msgErr) {
+      setAlertInfo({ text: msgErr, type: "danger" });
+      return;
+    }
 
     try {
       setSending(true);
@@ -55,6 +65,8 @@ function AdminNotifications() {
         setAlertInfo({ text: res.message, type: "success" });
         setMessage("");
         setTargetUser("all");
+        setTouched(false);
+        setError("");
         // Reload notifications list
         const notifRes = await getAdminNotifications();
         if (notifRes.success) setNotifications(notifRes.notifications);
@@ -122,15 +134,33 @@ function AdminNotifications() {
                 </div>
 
                 <div className="mb-4">
-                  <label className="form-label fw-semibold small">Notification Message</label>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="form-label fw-semibold small mb-1">
+                      Notification Message <span className="text-danger">*</span>
+                    </label>
+                    <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+                      Min. 5 chars ({message.length}/500)
+                    </small>
+                  </div>
                   <textarea
-                    className="form-control"
+                    className={`form-control ${touched ? (error ? "is-invalid" : "is-valid") : ""}`}
                     rows="4"
+                    maxLength={500}
                     placeholder="Write your announcement or alert message here..."
                     value={message}
-                    onChange={(e) => setMessage(e.target.value)}
+                    onChange={(e) => {
+                      setMessage(e.target.value);
+                      if (touched) setError(validateDescription(e.target.value, 5, 500));
+                    }}
+                    onBlur={() => {
+                      setTouched(true);
+                      setError(validateDescription(message, 5, 500));
+                    }}
                     required
                   ></textarea>
+                  {touched && error && (
+                    <div className="invalid-feedback d-block">{error}</div>
+                  )}
                 </div>
 
                 <button

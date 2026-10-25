@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import { getApprovedRequests } from "../../services/charityService";
 import { getAuthUser } from "../../utils/authStorage";
+import { validateName, validateEmail, validateDescription } from "../../utils/validators";
 
 function Home() {
   const currentUser = getAuthUser();
@@ -20,6 +21,8 @@ function Home() {
     email: currentUser?.email || "",
     message: "",
   });
+  const [feedbackErrors, setFeedbackErrors] = useState({});
+  const [feedbackTouched, setFeedbackTouched] = useState({});
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
 
   const categories = [
@@ -84,12 +87,22 @@ function Home() {
 
   const handleFeedbackSubmit = (e) => {
     e.preventDefault();
-    if (!feedbackForm.message.trim()) return;
+    const nameErr = validateName(feedbackForm.name);
+    const emailErr = validateEmail(feedbackForm.email);
+    const msgErr = validateDescription(feedbackForm.message, 10, 1000);
+
+    setFeedbackErrors({ name: nameErr, email: emailErr, message: msgErr });
+    setFeedbackTouched({ name: true, email: true, message: true });
+
+    if (nameErr || emailErr || msgErr) return;
+
     setFeedbackSuccess(true);
     setTimeout(() => {
       setFeedbackSuccess(false);
       setShowFeedbackModal(false);
       setFeedbackForm((prev) => ({ ...prev, message: "" }));
+      setFeedbackTouched({});
+      setFeedbackErrors({});
     }, 1600);
   };
 
@@ -490,7 +503,7 @@ function Home() {
                 ></button>
               </div>
 
-              <form onSubmit={handleFeedbackSubmit}>
+              <form onSubmit={handleFeedbackSubmit} noValidate>
                 <div className="modal-body p-4">
                   {feedbackSuccess ? (
                     <div className="alert alert-success text-center py-3 mb-0">
@@ -501,43 +514,76 @@ function Home() {
                   ) : (
                     <>
                       <div className="mb-3">
-                        <label className="form-label small text-secondary">Your Name</label>
+                        <label className="form-label small text-secondary">Your Name <span className="text-danger">*</span></label>
                         <input
                           type="text"
-                          className="form-control bg-secondary bg-opacity-25 text-white border-secondary"
+                          className={`form-control bg-secondary bg-opacity-25 text-white border-secondary ${
+                            feedbackTouched.name ? (feedbackErrors.name ? "is-invalid" : "is-valid") : ""
+                          }`}
                           placeholder="e.g. John Doe"
                           value={feedbackForm.name}
-                          onChange={(e) =>
-                            setFeedbackForm({ ...feedbackForm, name: e.target.value })
-                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setFeedbackForm({ ...feedbackForm, name: val });
+                            if (feedbackTouched.name) setFeedbackErrors((prev) => ({ ...prev, name: validateName(val) }));
+                          }}
+                          onBlur={() => {
+                            setFeedbackTouched((prev) => ({ ...prev, name: true }));
+                            setFeedbackErrors((prev) => ({ ...prev, name: validateName(feedbackForm.name) }));
+                          }}
                           required
                         />
+                        {feedbackTouched.name && feedbackErrors.name && (
+                          <div className="invalid-feedback d-block">{feedbackErrors.name}</div>
+                        )}
                       </div>
                       <div className="mb-3">
-                        <label className="form-label small text-secondary">Email Address</label>
+                        <label className="form-label small text-secondary">Email Address <span className="text-danger">*</span></label>
                         <input
                           type="email"
-                          className="form-control bg-secondary bg-opacity-25 text-white border-secondary"
+                          className={`form-control bg-secondary bg-opacity-25 text-white border-secondary ${
+                            feedbackTouched.email ? (feedbackErrors.email ? "is-invalid" : "is-valid") : ""
+                          }`}
                           placeholder="name@example.com"
                           value={feedbackForm.email}
-                          onChange={(e) =>
-                            setFeedbackForm({ ...feedbackForm, email: e.target.value })
-                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setFeedbackForm({ ...feedbackForm, email: val });
+                            if (feedbackTouched.email) setFeedbackErrors((prev) => ({ ...prev, email: validateEmail(val) }));
+                          }}
+                          onBlur={() => {
+                            setFeedbackTouched((prev) => ({ ...prev, email: true }));
+                            setFeedbackErrors((prev) => ({ ...prev, email: validateEmail(feedbackForm.email) }));
+                          }}
                           required
                         />
+                        {feedbackTouched.email && feedbackErrors.email && (
+                          <div className="invalid-feedback d-block">{feedbackErrors.email}</div>
+                        )}
                       </div>
                       <div className="mb-3">
-                        <label className="form-label small text-secondary">Message / Query</label>
+                        <label className="form-label small text-secondary">Message / Query <span className="text-danger">*</span></label>
                         <textarea
                           rows="4"
-                          className="form-control bg-secondary bg-opacity-25 text-white border-secondary"
-                          placeholder="How can we assist you or what would you like to share?"
+                          className={`form-control bg-secondary bg-opacity-25 text-white border-secondary ${
+                            feedbackTouched.message ? (feedbackErrors.message ? "is-invalid" : "is-valid") : ""
+                          }`}
+                          placeholder="How can we assist you or what would you like to share? (min 10 characters)"
                           value={feedbackForm.message}
-                          onChange={(e) =>
-                            setFeedbackForm({ ...feedbackForm, message: e.target.value })
-                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setFeedbackForm({ ...feedbackForm, message: val });
+                            if (feedbackTouched.message) setFeedbackErrors((prev) => ({ ...prev, message: validateDescription(val, 10, 1000) }));
+                          }}
+                          onBlur={() => {
+                            setFeedbackTouched((prev) => ({ ...prev, message: true }));
+                            setFeedbackErrors((prev) => ({ ...prev, message: validateDescription(feedbackForm.message, 10, 1000) }));
+                          }}
                           required
                         ></textarea>
+                        {feedbackTouched.message && feedbackErrors.message && (
+                          <div className="invalid-feedback d-block">{feedbackErrors.message}</div>
+                        )}
                       </div>
                       <div className="p-2 rounded bg-secondary bg-opacity-10 border border-secondary border-opacity-25 text-secondary small">
                         <i className="bi bi-shield-lock me-1"></i>
