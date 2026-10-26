@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 
 const {
     registerTeam,
@@ -18,7 +19,7 @@ const {
 } = require("../controllers/donationController");
 
 // Authentication
-router.post("/register", registerTeam);
+router.post("/register", upload.single("id_document"), registerTeam);
 router.post("/login", loginTeam);
 
 // Verification Queue & Requests

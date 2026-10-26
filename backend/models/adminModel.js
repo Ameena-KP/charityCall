@@ -52,6 +52,7 @@ const getAllTeams = (callback) => {
             name,
             email,
             phone,
+            id_document,
             status,
             created_at
         FROM teams

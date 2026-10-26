@@ -12,11 +12,19 @@ const {
 // Team Registration (Defaults to 'Pending' approval)
 const registerTeam = async (req, res) => {
     const { name, email, phone, password } = req.body;
+    const id_document = req.file ? req.file.filename : (req.body.id_document || null);
 
     if (!name || !email || !phone || !password) {
         return res.status(400).json({
             success: false,
             message: "All fields (Name, Email, Mobile, Password) are required."
+        });
+    }
+
+    if (!id_document) {
+        return res.status(400).json({
+            success: false,
+            message: "Please upload your official ID proof document (PDF, PNG, JPG) for volunteer verification."
         });
     }
 
@@ -58,7 +66,7 @@ const registerTeam = async (req, res) => {
         if (result.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: "A team account with this email already exists"
+                message: "A volunteer account with this email already exists."
             });
         }
 
@@ -66,14 +74,20 @@ const registerTeam = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         createTeam(
-            { name, email, phone, password: hashedPassword },
+            {
+                name: trimmedName,
+                email: email.trim(),
+                phone: cleanPhone,
+                password: hashedPassword,
+                id_document
+            },
             (err) => {
                 if (err) {
                     return res.status(500).json({ success: false, message: err.message });
                 }
                 res.status(201).json({
                     success: true,
-                    message: "Team registration submitted successfully! Your account is pending admin approval before you can log in."
+                    message: "Volunteer registration submitted successfully! Your application and ID document are pending admin approval before you can log in."
                 });
             }
         );
