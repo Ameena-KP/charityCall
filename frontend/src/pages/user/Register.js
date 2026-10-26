@@ -9,6 +9,7 @@ import {
   validatePhone,
   validatePassword,
   validateAddress,
+  validateDocumentFile,
   sanitizePhoneInput,
 } from "../../utils/validators";
 
@@ -22,6 +23,8 @@ function Register() {
     password: "",
     address: "",
   });
+  const [idDocument, setIdDocument] = useState(null);
+  const [idDocError, setIdDocError] = useState("");
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
@@ -71,6 +74,23 @@ function Register() {
     }));
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      setIdDocument(null);
+      setIdDocError("ID proof document is required for volunteer verification.");
+      return;
+    }
+    const error = validateDocumentFile(file, ["pdf", "png", "jpg", "jpeg"], 5);
+    if (error) {
+      setIdDocError(error);
+      setIdDocument(null);
+    } else {
+      setIdDocError("");
+      setIdDocument(file);
+    }
+  };
+
   const validateAll = () => {
     const newErrors = {
       name: validateName(formData.name),
@@ -89,7 +109,24 @@ function Register() {
       address: true,
     });
 
-    return Object.values(newErrors).every((err) => !err);
+    let isValid = Object.values(newErrors).every((err) => !err);
+
+    if (roleType === "team") {
+      if (!idDocument) {
+        setIdDocError("Please upload an official ID proof document (PDF, PNG, JPG).");
+        isValid = false;
+      } else {
+        const fileErr = validateDocumentFile(idDocument, ["pdf", "png", "jpg", "jpeg"], 5);
+        if (fileErr) {
+          setIdDocError(fileErr);
+          isValid = false;
+        } else {
+          setIdDocError("");
+        }
+      }
+    }
+
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
@@ -113,15 +150,24 @@ function Register() {
           setTimeout(() => navigate("/login"), 1500);
         }
       } else {
-        const res = await registerTeam({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          password: formData.password,
-        });
+        if (!idDocument) {
+          setIdDocError("Please upload your official ID proof document.");
+          setErrorMsg("Please upload your ID proof document for volunteer verification.");
+          setLoading(false);
+          return;
+        }
+
+        const teamFormData = new FormData();
+        teamFormData.append("name", formData.name.trim());
+        teamFormData.append("email", formData.email.trim());
+        teamFormData.append("phone", formData.phone);
+        teamFormData.append("password", formData.password);
+        teamFormData.append("id_document", idDocument);
+
+        const res = await registerTeam(teamFormData);
         if (res.success) {
           setSuccessMsg(
-            "Volunteer registration submitted! Your account is pending admin approval."
+            "Volunteer registration submitted! Your application and ID document are pending admin approval."
           );
           setTimeout(() => navigate("/login"), 2500);
         }
@@ -140,7 +186,7 @@ function Register() {
       <Navbar />
 
       <div className="auth-page-wrapper flex-grow-1">
-        <div className="auth-box" style={{ maxWidth: "500px" }}>
+        <div className="auth-box" style={{ maxWidth: "540px" }}>
           <div className="auth-header">
             <div
               style={{
@@ -174,6 +220,7 @@ function Register() {
                   setRoleType("user");
                   setErrorMsg("");
                   setSuccessMsg("");
+                  setIdDocError("");
                 }}
               >
                 <i className="bi bi-person me-1"></i> Donor / Beneficiary
@@ -195,7 +242,7 @@ function Register() {
               <div className="alert alert-info py-2 small d-flex align-items-center gap-2 mb-3">
                 <i className="bi bi-info-circle-fill fs-5"></i>
                 <div>
-                  <strong>Notice:</strong> Volunteer accounts require verification and approval by the platform administrator before login.
+                  <strong>Notice:</strong> Volunteer accounts require uploading an official ID proof document. An administrator will inspect your document and approve your account before login.
                 </div>
               </div>
             )}
@@ -313,6 +360,40 @@ function Register() {
                 </div>
               )}
 
+              {/* ID Document Upload for Volunteer */}
+              {roleType === "team" && (
+                <div className="mb-3">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="form-label fw-semibold small mb-1">
+                      Volunteer ID Proof Document <span className="text-danger">*</span>
+                    </label>
+                    <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+                      PDF, PNG, JPG max 5MB
+                    </small>
+                  </div>
+                  <div className="input-group has-validation">
+                    <span className="input-group-text bg-light">
+                      <i className="bi bi-file-earmark-person text-muted"></i>
+                    </span>
+                    <input
+                      type="file"
+                      name="id_document"
+                      className={`form-control ${idDocError ? "is-invalid" : idDocument ? "is-valid" : ""}`}
+                      accept=".pdf,.png,.jpg,.jpeg"
+                      onChange={handleFileChange}
+                      required
+                    />
+                  </div>
+                  {idDocError ? (
+                    <div className="invalid-feedback d-block">{idDocError}</div>
+                  ) : (
+                    <small className="text-muted d-block mt-1" style={{ fontSize: "0.75rem" }}>
+                      Upload your Government ID, Aadhaar, Passport, or Organization Badge for Admin Approval.
+                    </small>
+                  )}
+                </div>
+              )}
+
               <div className="mb-4">
                 <div className="d-flex justify-content-between align-items-center">
                   <label className="form-label fw-semibold small mb-1">Password <span className="text-danger">*</span></label>
@@ -348,21 +429,20 @@ function Register() {
                 {loading ? (
                   <>
                     <span className="spinner-border spinner-border-sm me-2"></span>
-                    Creating Account...
+                    Submitting Registration...
                   </>
+                ) : roleType === "user" ? (
+                  "Create Citizen Account"
                 ) : (
-                  <>
-                    <i className="bi bi-person-check me-2"></i>
-                    Register as {roleType === "team" ? "Team Volunteer" : "User"}
-                  </>
+                  "Submit Volunteer Application"
                 )}
               </button>
             </form>
 
-            <div className="mt-3 text-center small text-muted">
-              Already have an account?{" "}
-              <Link to="/login" className="text-primary fw-semibold">
-                Sign In
+            <div className="text-center mt-3">
+              <span className="text-muted small">Already have an account? </span>
+              <Link to="/login" className="small fw-semibold text-primary">
+                Login here
               </Link>
             </div>
           </div>

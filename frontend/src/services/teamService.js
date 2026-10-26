@@ -1,7 +1,11 @@
 import api from "./api";
 
 export const registerTeam = async (teamData) => {
-  const response = await api.post("/team/register", teamData);
+  const isFormData = teamData instanceof FormData;
+  const config = isFormData
+    ? { headers: { "Content-Type": "multipart/form-data" } }
+    : {};
+  const response = await api.post("/team/register", teamData, config);
   return response.data;
 };
 
